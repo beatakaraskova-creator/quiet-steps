@@ -26,6 +26,8 @@ void main() {
     expect(store.quietStart, '22:00');
     expect(store.quietEnd, '07:00');
     expect(store.language, 'auto');
+    expect(store.eveningReflection, isTrue);
+    expect(store.reflectionTime, '20:30');
 
     store.language = 'sk';
     store.speakMessages = true;
@@ -35,6 +37,8 @@ void main() {
     store.quietStart = '21:30';
     store.quietEnd = '06:45';
     store.milestoneMessages = false;
+    store.eveningReflection = false;
+    store.reflectionTime = '21:15';
 
     expect(store.language, 'sk');
     expect(store.speakMessages, isTrue);
@@ -44,5 +48,7 @@ void main() {
     expect(store.quietStart, '21:30');
     expect(store.quietEnd, '06:45');
     expect(store.milestoneMessages, isFalse);
+    expect(store.eveningReflection, isFalse);
+    expect(store.reflectionTime, '21:15');
   });
 }

@@ -4,6 +4,8 @@ import '../l10n/app_text.dart';
 import '../models/look_pack.dart';
 import '../services/look.dart';
 import '../services/milestones.dart';
+import '../services/reflection.dart';
+import '../services/reflection_alerts.dart';
 import '../services/step_engine.dart';
 import '../services/store.dart';
 
@@ -28,6 +30,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _quietOn;
   late String _quietStart;
   late String _quietEnd;
+  late bool _eveningOn;
+  late String _reflectionTime;
 
   @override
   void initState() {
@@ -45,6 +49,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _quietOn = s.quietHours;
     _quietStart = s.quietStart;
     _quietEnd = s.quietEnd;
+    _eveningOn = s.eveningReflection;
+    _reflectionTime = s.reflectionTime;
   }
 
   @override
@@ -73,6 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     s.weightKg = int.tryParse(weight.text) ?? s.weightKg;
     _writeMilestonePrefs();
     StepEngine.instance.syncTaskPrefs();
+    ReflectionAlerts.instance.syncSchedule(Store.instance);
     Navigator.of(context).pop();
   }
 
@@ -86,16 +93,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     s.quietHours = _quietOn;
     s.quietStart = _quietStart;
     s.quietEnd = _quietEnd;
+    s.eveningReflection = _eveningOn;
+    s.reflectionTime = _reflectionTime;
   }
 
   void _touchMilestone(VoidCallback fn) {
     setState(fn);
     _writeMilestonePrefs();
     StepEngine.instance.syncTaskPrefs();
+    ReflectionAlerts.instance.syncSchedule(Store.instance);
   }
 
-  Future<void> _pickTime({required bool start}) async {
-    final raw = start ? _quietStart : _quietEnd;
+  Future<void> _pickTime({required bool start, bool reflection = false}) async {
+    final raw = reflection
+        ? _reflectionTime
+        : (start ? _quietStart : _quietEnd);
     final mins = minutesFromHm(raw);
     final picked = await showTimePicker(
       context: context,
@@ -117,7 +129,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (picked == null) return;
     _touchMilestone(() {
       final hm = formatHm(picked.hour, picked.minute);
-      if (start) {
+      if (reflection) {
+        _reflectionTime = hm;
+      } else if (start) {
         _quietStart = hm;
       } else {
         _quietEnd = hm;
@@ -128,6 +142,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final p = Look.instance.pack;
+    final lang = resolveLanguage(
+      stored: _language,
+      deviceLanguageCode: View.of(context).platformDispatcher.locale.languageCode,
+    );
     return Scaffold(
       backgroundColor: p.bg,
       appBar: AppBar(
@@ -190,6 +208,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _timeTile(AppText.quietStart, _quietStart, () => _pickTime(start: true), p),
           _timeTile(AppText.quietEnd, _quietEnd, () => _pickTime(start: false), p),
+          _switchTile(
+            reflectionUiLine(lang, 'setting'),
+            _eveningOn,
+            (v) => _touchMilestone(() => _eveningOn = v),
+            p,
+          ),
+          _timeTile(
+            reflectionUiLine(lang, 'setting'),
+            _reflectionTime,
+            () => _pickTime(start: true, reflection: true),
+            p,
+          ),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(16),

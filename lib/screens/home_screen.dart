@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../services/look.dart';
 import '../services/milestones.dart';
+import '../services/reflection.dart';
+import '../services/reflection_alerts.dart';
 import '../services/step_engine.dart';
 import '../services/step_math.dart';
 import '../services/store.dart';
@@ -13,6 +15,7 @@ import '../widgets/step_ring.dart';
 import '../widgets/week_strip.dart';
 import 'history_screen.dart';
 import 'look_screen.dart';
+import 'reflection_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -43,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       engine.refreshFromDisk();
+      ReflectionAlerts.instance.maybeFire(Store.instance);
     }
   }
 
@@ -179,6 +183,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               fontScale: scale,
               frosted: hasPhoto,
             ),
+            if (store.eveningReflection &&
+                isAfterReflectionTime(
+                  timeHm: store.reflectionTime,
+                  now: DateTime.now(),
+                )) ...[
+              const SizedBox(height: 12),
+              _reflectionCard(
+                language: resolveLanguage(
+                  stored: store.language,
+                  deviceLanguageCode:
+                      PlatformDispatcher.instance.locale.languageCode,
+                ),
+                photo: hasPhoto,
+              ),
+            ],
             const SizedBox(height: 22),
             Row(
               children: [
@@ -312,6 +331,49 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         color: Colors.black.withValues(alpha: strong ? 0.55 : 0.40),
       ),
     ];
+  }
+
+  Widget _reflectionCard({required String language, required bool photo}) {
+    final pack = Look.instance.pack;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ReflectionScreen()),
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: GlassPanel(
+          frosted: photo,
+          color: pack.card,
+          light: pack.light,
+          radius: 16,
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          child: Row(
+            children: [
+              Icon(
+                Icons.nightlight_round,
+                color: pack.accent,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  reflectionUiLine(language, 'card'),
+                  style: TextStyle(
+                    color: pack.ink,
+                    fontSize: 15 * Look.instance.fontScale,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Icon(Icons.chevron_right, color: pack.muted),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Map<String, int> _stepsByDate(Store store) {

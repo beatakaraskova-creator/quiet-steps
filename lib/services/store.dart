@@ -36,6 +36,9 @@ class Store {
   static const _kQuietEnd = 'quiet_end';
   static const _kLanguage = 'language';
   static const _kFiredMilestones = 'fired_milestones';
+  static const _kEveningReflection = 'evening_reflection';
+  static const _kReflectionTime = 'reflection_time';
+  static const _kLastReflection = 'last_reflection';
 
   late SharedPreferences _p;
 
@@ -129,6 +132,15 @@ class Store {
 
   String get firedMilestonesRaw => _p.getString(_kFiredMilestones) ?? '';
   set firedMilestonesRaw(String v) => _p.setString(_kFiredMilestones, v);
+
+  bool get eveningReflection => _p.getBool(_kEveningReflection) ?? true;
+  set eveningReflection(bool v) => _p.setBool(_kEveningReflection, v);
+
+  String get reflectionTime => _p.getString(_kReflectionTime) ?? '20:30';
+  set reflectionTime(String v) => _p.setString(_kReflectionTime, v);
+
+  String get lastReflectionDate => _p.getString(_kLastReflection) ?? '';
+  set lastReflectionDate(String v) => _p.setString(_kLastReflection, v);
 
   List<DayRecord> history() {
     final raw = _p.getString(_kHistory);

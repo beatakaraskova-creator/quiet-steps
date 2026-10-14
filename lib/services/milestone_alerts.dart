@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import 'milestones.dart';
+import 'reflection_alerts.dart';
 import 'step_math.dart';
 import 'store.dart';
 
@@ -28,6 +29,11 @@ class MilestoneAlerts {
       const android = AndroidInitializationSettings('@mipmap/ic_launcher');
       await _plugin.initialize(
         const InitializationSettings(android: android),
+        onDidReceiveNotificationResponse: (response) {
+          if (response.payload == ReflectionAlerts.payload) {
+            openReflectionScreen();
+          }
+        },
       );
       const channel = AndroidNotificationChannel(
         _channelId,
