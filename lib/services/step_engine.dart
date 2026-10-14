@@ -5,6 +5,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'milestone_alerts.dart';
 import 'step_math.dart';
 import 'step_task.dart';
 import 'store.dart';
@@ -98,7 +99,13 @@ class StepEngine extends ChangeNotifier {
               await FlutterForegroundTask.isRunningService) {
             return;
           }
-          await applyRawSteps(Store.instance, event.steps);
+          final previous = Store.instance.todaySteps;
+          final steps = await applyRawSteps(Store.instance, event.steps);
+          await MilestoneAlerts.instance.onStepsUpdated(
+            Store.instance,
+            previous,
+            steps,
+          );
           error = null;
           notifyListeners();
         },
@@ -162,6 +169,10 @@ class StepEngine extends ChangeNotifier {
     await FlutterForegroundTask.stopService();
     _listenForeground();
     notifyListeners();
+  }
+
+  void syncTaskPrefs() {
+    FlutterForegroundTask.sendDataToTask(StepTaskHandler.reloadPrefsCommand);
   }
 
   Future<void> resetToday() async {

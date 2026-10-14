@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:pedometer/pedometer.dart';
 
+import 'milestone_alerts.dart';
 import 'step_math.dart';
 import 'store.dart';
 
@@ -13,12 +14,14 @@ void stepTaskCallback() {
 
 class StepTaskHandler extends TaskHandler {
   static const String resetTodayCommand = 'resetToday';
+  static const String reloadPrefsCommand = 'reloadPrefs';
 
   StreamSubscription<StepCount>? _sub;
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     await Store.instance.init();
+    await MilestoneAlerts.instance.init();
     _listen();
   }
 
@@ -28,12 +31,18 @@ class StepTaskHandler extends TaskHandler {
       _sub = Pedometer.stepCountStream.listen(
         (event) async {
           final store = Store.instance;
+          final previous = store.todaySteps;
           final steps = await applyRawSteps(store, event.steps);
           await FlutterForegroundTask.updateService(
             notificationTitle: 'Quiet Steps',
             notificationText: '${_fmt(steps)} steps today · on this phone only',
           );
           FlutterForegroundTask.sendDataToMain(steps);
+          await MilestoneAlerts.instance.onStepsUpdated(
+            store,
+            previous,
+            steps,
+          );
         },
         onError: (_) {},
       );
@@ -54,6 +63,8 @@ class StepTaskHandler extends TaskHandler {
   void onReceiveData(Object data) {
     if (data == resetTodayCommand) {
       unawaited(_resetToday());
+    } else if (data == reloadPrefsCommand) {
+      unawaited(Store.instance.reload());
     }
   }
 

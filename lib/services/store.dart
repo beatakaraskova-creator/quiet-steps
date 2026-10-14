@@ -27,6 +27,15 @@ class Store {
   static const _kLookBgColor = 'look_bg_color';
   static const _kSkipPausedGap = 'skip_paused_gap';
   static const _kOnboardingDone = 'onboarding_done';
+  static const _kMilestoneOn = 'milestone_on';
+  static const _kSpeakOn = 'speak_on';
+  static const _kVoiceSpeed = 'voice_speed';
+  static const _kMilestoneStyle = 'milestone_style';
+  static const _kQuietHours = 'quiet_hours';
+  static const _kQuietStart = 'quiet_start';
+  static const _kQuietEnd = 'quiet_end';
+  static const _kLanguage = 'language';
+  static const _kFiredMilestones = 'fired_milestones';
 
   late SharedPreferences _p;
 
@@ -93,6 +102,33 @@ class Store {
 
   bool get onboardingDone => _p.getBool(_kOnboardingDone) ?? false;
   set onboardingDone(bool v) => _p.setBool(_kOnboardingDone, v);
+
+  bool get milestoneMessages => _p.getBool(_kMilestoneOn) ?? true;
+  set milestoneMessages(bool v) => _p.setBool(_kMilestoneOn, v);
+
+  bool get speakMessages => _p.getBool(_kSpeakOn) ?? false;
+  set speakMessages(bool v) => _p.setBool(_kSpeakOn, v);
+
+  String get voiceSpeed => _p.getString(_kVoiceSpeed) ?? 'normal';
+  set voiceSpeed(String v) => _p.setString(_kVoiceSpeed, v);
+
+  String get milestoneStyle => _p.getString(_kMilestoneStyle) ?? 'calm';
+  set milestoneStyle(String v) => _p.setString(_kMilestoneStyle, v);
+
+  bool get quietHours => _p.getBool(_kQuietHours) ?? true;
+  set quietHours(bool v) => _p.setBool(_kQuietHours, v);
+
+  String get quietStart => _p.getString(_kQuietStart) ?? '22:00';
+  set quietStart(String v) => _p.setString(_kQuietStart, v);
+
+  String get quietEnd => _p.getString(_kQuietEnd) ?? '07:00';
+  set quietEnd(String v) => _p.setString(_kQuietEnd, v);
+
+  String get language => _p.getString(_kLanguage) ?? 'auto';
+  set language(String v) => _p.setString(_kLanguage, v);
+
+  String get firedMilestonesRaw => _p.getString(_kFiredMilestones) ?? '';
+  set firedMilestonesRaw(String v) => _p.setString(_kFiredMilestones, v);
 
   List<DayRecord> history() {
     final raw = _p.getString(_kHistory);

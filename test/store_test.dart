@@ -13,4 +13,36 @@ void main() {
     store.onboardingDone = true;
     expect(store.onboardingDone, isTrue);
   });
+
+  test('milestone settings default and save', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = Store.instance;
+    await store.init();
+    expect(store.milestoneMessages, isTrue);
+    expect(store.speakMessages, isFalse);
+    expect(store.voiceSpeed, 'normal');
+    expect(store.milestoneStyle, 'calm');
+    expect(store.quietHours, isTrue);
+    expect(store.quietStart, '22:00');
+    expect(store.quietEnd, '07:00');
+    expect(store.language, 'auto');
+
+    store.language = 'sk';
+    store.speakMessages = true;
+    store.voiceSpeed = 'slow';
+    store.milestoneStyle = 'cheerful';
+    store.quietHours = false;
+    store.quietStart = '21:30';
+    store.quietEnd = '06:45';
+    store.milestoneMessages = false;
+
+    expect(store.language, 'sk');
+    expect(store.speakMessages, isTrue);
+    expect(store.voiceSpeed, 'slow');
+    expect(store.milestoneStyle, 'cheerful');
+    expect(store.quietHours, isFalse);
+    expect(store.quietStart, '21:30');
+    expect(store.quietEnd, '06:45');
+    expect(store.milestoneMessages, isFalse);
+  });
 }

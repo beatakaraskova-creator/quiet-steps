@@ -17,4 +17,17 @@ class AppText {
       'Next, allow Physical activity so your phone can count your steps.';
   static const goalLabel = 'Daily goal (steps)';
   static const goalMustBe100 = 'Goal must be at least 100';
+
+  static const language = 'Language';
+  static const milestoneMessages = 'Milestone messages';
+  static const speakMessages = 'Speak messages aloud';
+  static const voiceSpeed = 'Voice speed';
+  static const voiceSlow = 'Slow';
+  static const voiceNormal = 'Normal';
+  static const style = 'Style';
+  static const styleCalm = 'Calm';
+  static const styleCheerful = 'Cheerful';
+  static const quietHours = 'Quiet hours';
+  static const quietStart = 'Starts';
+  static const quietEnd = 'Ends';
 }
