@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/day_record.dart';
+import '../models/walk_entry.dart';
+import 'walks.dart';
 
 /// All data stays on this phone. No network keys exist here.
 class Store {
@@ -39,6 +41,10 @@ class Store {
   static const _kEveningReflection = 'evening_reflection';
   static const _kReflectionTime = 'reflection_time';
   static const _kLastReflection = 'last_reflection';
+  static const _kWalkMood = 'walk_mood';
+  static const _kWalkStartSteps = 'walk_start_steps';
+  static const _kWalkStartMs = 'walk_start_ms';
+  static const _kWalks = 'walks';
 
   late SharedPreferences _p;
 
@@ -142,6 +148,17 @@ class Store {
   String get lastReflectionDate => _p.getString(_kLastReflection) ?? '';
   set lastReflectionDate(String v) => _p.setString(_kLastReflection, v);
 
+  String get walkMood => _p.getString(_kWalkMood) ?? '';
+  set walkMood(String v) => _p.setString(_kWalkMood, v);
+
+  int get walkStartSteps => _p.getInt(_kWalkStartSteps) ?? 0;
+  set walkStartSteps(int v) => _p.setInt(_kWalkStartSteps, v);
+
+  int get walkStartMs => _p.getInt(_kWalkStartMs) ?? 0;
+  set walkStartMs(int v) => _p.setInt(_kWalkStartMs, v);
+
+  bool get walkActive => walkMood.isNotEmpty && walkStartMs > 0;
+
   List<DayRecord> history() {
     final raw = _p.getString(_kHistory);
     if (raw == null || raw.isEmpty) return [];
@@ -181,5 +198,41 @@ class Store {
   int get kcalToday {
     // ~0.5 kcal per kg per km of walking
     return (0.5 * weightKg * kmToday).round();
+  }
+
+  void startWalk(String mood, int stepsNow, DateTime start) {
+    walkMood = mood;
+    walkStartSteps = stepsNow;
+    walkStartMs = start.millisecondsSinceEpoch;
+  }
+
+  void clearWalk() {
+    walkMood = '';
+    walkStartSteps = 0;
+    walkStartMs = 0;
+  }
+
+  List<WalkEntry> walks() {
+    final raw = _p.getString(_kWalks);
+    if (raw == null || raw.isEmpty) return [];
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list
+        .map((e) => WalkEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> saveWalks(List<WalkEntry> items) async {
+    await _p.setString(
+      _kWalks,
+      jsonEncode(items.map((e) => e.toJson()).toList()),
+    );
+  }
+
+  Future<void> addWalk(WalkEntry entry) async {
+    await saveWalks(addWalkEntry(walks(), entry));
+  }
+
+  Future<void> deleteWalk(String id) async {
+    await saveWalks(deleteWalkEntry(walks(), id));
   }
 }

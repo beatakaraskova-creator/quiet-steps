@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/streak_text.dart';
+import '../l10n/walk_text.dart';
 import '../services/look.dart';
 import '../services/milestones.dart';
 import '../services/reflection.dart';
@@ -10,6 +13,7 @@ import '../services/reflection_alerts.dart';
 import '../services/step_engine.dart';
 import '../services/step_math.dart';
 import '../services/store.dart';
+import '../services/walks.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/step_ring.dart';
 import '../widgets/week_strip.dart';
@@ -17,6 +21,8 @@ import 'history_screen.dart';
 import 'look_screen.dart';
 import 'reflection_screen.dart';
 import 'settings_screen.dart';
+import 'walk_journal_screen.dart';
+import 'walk_summary_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,18 +33,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final engine = StepEngine.instance;
+  Timer? _walkTimer;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     engine.addListener(_tick);
+    if (Store.instance.walkActive) _ensureWalkTimer();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     engine.removeListener(_tick);
+    _stopWalkTimer();
     super.dispose();
   }
 
@@ -51,6 +60,106 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _tick() {
+    if (mounted) setState(() {});
+  }
+
+  String _language() {
+    return resolveLanguage(
+      stored: Store.instance.language,
+      deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
+    );
+  }
+
+  void _ensureWalkTimer() {
+    _walkTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      if (Store.instance.walkActive) {
+        setState(() {});
+      } else {
+        _stopWalkTimer();
+      }
+    });
+  }
+
+  void _stopWalkTimer() {
+    _walkTimer?.cancel();
+    _walkTimer = null;
+  }
+
+  Future<void> _chooseMood() async {
+    final look = Look.instance.pack;
+    final lang = _language();
+    final mood = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: look.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 16, 8, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                  child: Text(
+                    walkUiLine(lang, 'choose'),
+                    style: TextStyle(
+                      color: look.ink,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                for (final id in walkMoodIds)
+                  ListTile(
+                    title: Text(
+                      walkMoodLabel(lang, id),
+                      style: TextStyle(color: look.ink),
+                    ),
+                    onTap: () => Navigator.pop(ctx, id),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (mood == null || !mounted) return;
+    Store.instance.startWalk(mood, Store.instance.todaySteps, DateTime.now());
+    _ensureWalkTimer();
+    setState(() {});
+  }
+
+  Future<void> _endWalk() async {
+    final store = Store.instance;
+    if (!store.walkActive) return;
+    final lang = _language();
+    final end = DateTime.now();
+    final start = DateTime.fromMillisecondsSinceEpoch(store.walkStartMs);
+    final entry = finishWalk(
+      mood: store.walkMood,
+      startSteps: store.walkStartSteps,
+      currentSteps: store.todaySteps,
+      start: start,
+      end: end,
+    );
+    final line = pickWalkLine(language: lang, mood: entry.mood);
+    store.clearWalk();
+    _stopWalkTimer();
+    if (!mounted) return;
+    setState(() {});
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => WalkSummaryScreen(
+          entry: entry,
+          line: line,
+          language: lang,
+        ),
+      ),
+    );
     if (mounted) setState(() {});
   }
 
@@ -68,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final scale = Look.instance.fontScale;
     final steps = store.todaySteps;
     final goal = store.goal;
+    final lang = _language();
 
     final photo = Look.instance.backgroundPath;
     final photoFile = photo != null ? File(photo) : null;
@@ -174,11 +284,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               stepsByDate: _stepsByDate(store),
               goal: goal,
               now: DateTime.now(),
-              language: resolveLanguage(
-                stored: store.language,
-                deviceLanguageCode:
-                    PlatformDispatcher.instance.locale.languageCode,
-              ),
+              language: lang,
               pack: look,
               fontScale: scale,
               frosted: hasPhoto,
@@ -190,11 +296,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 )) ...[
               const SizedBox(height: 12),
               _reflectionCard(
-                language: resolveLanguage(
-                  stored: store.language,
-                  deviceLanguageCode:
-                      PlatformDispatcher.instance.locale.languageCode,
-                ),
+                language: lang,
                 photo: hasPhoto,
               ),
             ],
@@ -266,6 +368,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ],
             ),
             const SizedBox(height: 10),
+            if (store.walkActive)
+              _walkLiveCard(
+                language: lang,
+                photo: hasPhoto,
+                stepsNow: steps,
+              )
+            else
+              OutlinedButton(
+                onPressed: _chooseMood,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: look.ink,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: const Size(double.infinity, 52),
+                  side: BorderSide(
+                    color: hasPhoto
+                        ? look.ink.withValues(alpha: 0.28)
+                        : look.line,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text(walkUiLine(lang, 'start')),
+              ),
+            const SizedBox(height: 10),
             TextButton(
               onPressed: () async {
                 final ok = await showDialog<bool>(
@@ -292,6 +419,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               },
               child: Text(
                 'Reset today',
+                style: TextStyle(
+                  color: look.muted,
+                  shadows: _photoShadow(hasPhoto),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const WalkJournalScreen()),
+                );
+                if (mounted) setState(() {});
+              },
+              child: Text(
+                walkUiLine(lang, 'journal'),
                 style: TextStyle(
                   color: look.muted,
                   shadows: _photoShadow(hasPhoto),
@@ -331,6 +473,55 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         color: Colors.black.withValues(alpha: strong ? 0.55 : 0.40),
       ),
     ];
+  }
+
+  Widget _walkLiveCard({
+    required String language,
+    required bool photo,
+    required int stepsNow,
+  }) {
+    final pack = Look.instance.pack;
+    final store = Store.instance;
+    final start = DateTime.fromMillisecondsSinceEpoch(store.walkStartMs);
+    final minutes = walkMinutes(start, DateTime.now());
+    final walkSteps = walkStepDifference(store.walkStartSteps, stepsNow);
+    return GlassPanel(
+      frosted: photo,
+      color: pack.card,
+      light: pack.light,
+      radius: 16,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            walkMoodLabel(language, store.walkMood),
+            style: TextStyle(
+              color: pack.ink,
+              fontSize: 16 * Look.instance.fontScale,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '${walkMinutesLabel(language, minutes)}  ·  ${StreakText.steps(language, walkSteps)}',
+            style: TextStyle(color: pack.accent, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: _endWalk,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: pack.ink,
+              side: BorderSide(color: pack.line),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: Text(walkUiLine(language, 'end')),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _reflectionCard({required String language, required bool photo}) {
