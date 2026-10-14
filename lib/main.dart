@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/look.dart';
+import 'services/milestones.dart';
 import 'services/step_engine.dart';
 import 'services/store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  for (final lang in supportedLanguages) {
+    await initializeDateFormatting(lang);
+  }
   await StepEngine.instance.init();
   await Look.instance.load();
   runApp(const QuietStepsApp());

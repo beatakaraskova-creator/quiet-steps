@@ -1,12 +1,16 @@
 import 'dart:io';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/material.dart';
 
 import '../services/look.dart';
+import '../services/milestones.dart';
 import '../services/step_engine.dart';
+import '../services/step_math.dart';
 import '../services/store.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/step_ring.dart';
+import '../widgets/week_strip.dart';
 import 'history_screen.dart';
 import 'look_screen.dart';
 import 'settings_screen.dart';
@@ -161,7 +165,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
+            WeekStrip(
+              stepsByDate: _stepsByDate(store),
+              goal: goal,
+              now: DateTime.now(),
+              language: resolveLanguage(
+                stored: store.language,
+                deviceLanguageCode:
+                    PlatformDispatcher.instance.locale.languageCode,
+              ),
+              pack: look,
+              fontScale: scale,
+              frosted: hasPhoto,
+            ),
+            const SizedBox(height: 22),
             Row(
               children: [
                 _stat(
@@ -294,6 +312,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         color: Colors.black.withValues(alpha: strong ? 0.55 : 0.40),
       ),
     ];
+  }
+
+  Map<String, int> _stepsByDate(Store store) {
+    final map = <String, int>{
+      for (final d in store.history()) d.date: d.steps,
+    };
+    final key = store.todayDate.isEmpty ? todayKey() : store.todayDate;
+    map[key] = store.todaySteps;
+    return map;
   }
 
   Widget _stat(String value, String label, {required bool photo}) {
