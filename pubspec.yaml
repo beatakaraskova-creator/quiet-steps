@@ -46,6 +46,8 @@ dependencies:
   flutter_local_notifications: ^19.4.2
   flutter_timezone: ^5.0.1
   timezone: ^0.10.1
+  share_plus: ^11.0.0
+  gal: ^2.3.1
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +92,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/icon.png
+    - assets/icon/icon_foreground.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/streak_text.dart';
 import '../l10n/walk_text.dart';
+import '../services/postcard.dart';
 import '../services/look.dart';
 import '../services/milestones.dart';
 import '../services/reflection.dart';
@@ -21,6 +22,7 @@ import 'history_screen.dart';
 import 'look_screen.dart';
 import 'reflection_screen.dart';
 import 'settings_screen.dart';
+import 'postcard_screen.dart';
 import 'walk_journal_screen.dart';
 import 'walk_summary_screen.dart';
 
@@ -425,20 +427,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const WalkJournalScreen()),
-                );
-                if (mounted) setState(() {});
-              },
-              child: Text(
-                walkUiLine(lang, 'journal'),
-                style: TextStyle(
-                  color: look.muted,
-                  shadows: _photoShadow(hasPhoto),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const WalkJournalScreen(),
+                        ),
+                      );
+                      if (mounted) setState(() {});
+                    },
+                    child: Text(
+                      walkUiLine(lang, 'journal'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: look.muted,
+                        shadows: _photoShadow(hasPhoto),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PostcardScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      postcardUiLine(lang, 'title'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: look.muted,
+                        shadows: _photoShadow(hasPhoto),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             GlassPanel(
