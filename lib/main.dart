@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'services/look.dart';
 import 'services/step_engine.dart';
+import 'services/store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +34,9 @@ class QuietStepsApp extends StatelessWidget {
           title: 'Quiet Steps',
           debugShowCheckedModeBanner: false,
           theme: look.theme,
-          home: const HomeScreen(),
+          home: Store.instance.onboardingDone
+              ? const HomeScreen()
+              : const OnboardingScreen(),
         );
       },
     );

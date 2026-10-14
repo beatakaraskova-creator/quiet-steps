@@ -26,6 +26,7 @@ class Store {
   static const _kLookAccent = 'look_accent';
   static const _kLookBgColor = 'look_bg_color';
   static const _kSkipPausedGap = 'skip_paused_gap';
+  static const _kOnboardingDone = 'onboarding_done';
 
   late SharedPreferences _p;
 
@@ -89,6 +90,9 @@ class Store {
 
   bool get skipPausedGap => _p.getBool(_kSkipPausedGap) ?? false;
   set skipPausedGap(bool v) => _p.setBool(_kSkipPausedGap, v);
+
+  bool get onboardingDone => _p.getBool(_kOnboardingDone) ?? false;
+  set onboardingDone(bool v) => _p.setBool(_kOnboardingDone, v);
 
   List<DayRecord> history() {
     final raw = _p.getString(_kHistory);
