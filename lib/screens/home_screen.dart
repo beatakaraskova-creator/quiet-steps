@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/streak_text.dart';
 import '../l10n/walk_text.dart';
+import '../services/glance.dart';
 import '../services/postcard.dart';
 import '../services/look.dart';
 import '../services/milestones.dart';
@@ -217,6 +218,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const LookScreen()),
               );
+              scheduleQuietStepsWidgetPush(force: true);
               setState(() {});
             },
             icon: Icon(Icons.palette_outlined, color: look.muted),
@@ -236,6 +238,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
+              scheduleQuietStepsWidgetPush(force: true);
               setState(() {});
             },
             icon: Icon(Icons.tune, color: look.muted),

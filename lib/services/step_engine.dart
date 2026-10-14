@@ -5,6 +5,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'glance.dart';
 import 'milestone_alerts.dart';
 import 'step_math.dart';
 import 'step_task.dart';
@@ -106,6 +107,7 @@ class StepEngine extends ChangeNotifier {
             previous,
             steps,
           );
+          scheduleQuietStepsWidgetPush();
           error = null;
           notifyListeners();
         },
@@ -182,6 +184,7 @@ class StepEngine extends ChangeNotifier {
     }
     await Store.instance.reload();
     resetTodayCount(Store.instance);
+    scheduleQuietStepsWidgetPush(force: true);
     notifyListeners();
   }
 

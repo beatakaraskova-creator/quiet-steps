@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/glance.dart';
 import 'services/look.dart';
 import 'services/milestones.dart';
 import 'services/reflection_alerts.dart';
@@ -18,6 +19,7 @@ Future<void> main() async {
   }
   await StepEngine.instance.init();
   await Look.instance.load();
+  await pushQuietStepsWidget(force: true);
   await ReflectionAlerts.instance.init();
   await ReflectionAlerts.instance.syncSchedule(Store.instance);
   await ReflectionAlerts.instance.maybeFire(Store.instance);

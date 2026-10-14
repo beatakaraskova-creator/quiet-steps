@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_small_label">Quiet Steps</string>
+    <string name="widget_small_description">Pasos de hoy y barra de progreso</string>
+    <string name="widget_medium_label">Quiet Steps</string>
+    <string name="widget_medium_description">Pasos de hoy, racha y estado</string>
+</resources>

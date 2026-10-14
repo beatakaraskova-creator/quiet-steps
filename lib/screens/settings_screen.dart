@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import '../l10n/app_text.dart';
 import '../models/look_pack.dart';
 import '../services/backup.dart';
+import '../services/glance.dart';
 import '../services/look.dart';
 import '../services/milestones.dart';
 import '../services/reflection.dart';
@@ -89,6 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _writeMilestonePrefs();
     StepEngine.instance.syncTaskPrefs();
     ReflectionAlerts.instance.syncSchedule(Store.instance);
+    scheduleQuietStepsWidgetPush(force: true);
     Navigator.of(context).pop();
   }
 
@@ -111,6 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _writeMilestonePrefs();
     StepEngine.instance.syncTaskPrefs();
     ReflectionAlerts.instance.syncSchedule(Store.instance);
+    scheduleQuietStepsWidgetPush(force: true);
   }
 
   Future<void> _pickTime({required bool start, bool reflection = false}) async {
@@ -290,6 +293,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _reloadFromStore();
       StepEngine.instance.syncTaskPrefs();
       ReflectionAlerts.instance.syncSchedule(Store.instance);
+      scheduleQuietStepsWidgetPush(force: true);
       await _snack(backupUiLine(lang, 'done'));
     } catch (_) {
       await _snack(backupUiLine(lang, 'failed'));

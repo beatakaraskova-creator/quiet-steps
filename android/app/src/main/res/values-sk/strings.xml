@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_small_label">Quiet Steps</string>
+    <string name="widget_small_description">Dnešné kroky a ukazovateľ cieľa</string>
+    <string name="widget_medium_label">Quiet Steps</string>
+    <string name="widget_medium_description">Dnešné kroky, séria a stav</string>
+</resources>

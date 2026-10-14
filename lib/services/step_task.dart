@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:pedometer/pedometer.dart';
 
+import 'glance.dart';
 import 'milestone_alerts.dart';
 import 'reflection_alerts.dart';
 import 'step_math.dart';
@@ -40,6 +41,7 @@ class StepTaskHandler extends TaskHandler {
             notificationText: '${_fmt(steps)} steps today · on this phone only',
           );
           FlutterForegroundTask.sendDataToMain(steps);
+          scheduleQuietStepsWidgetPush();
           await MilestoneAlerts.instance.onStepsUpdated(
             store,
             previous,
@@ -59,6 +61,7 @@ class StepTaskHandler extends TaskHandler {
       notificationText: '${_fmt(steps)} steps today · on this phone only',
     );
     FlutterForegroundTask.sendDataToMain(steps);
+    scheduleQuietStepsWidgetPush();
     unawaited(ReflectionAlerts.instance.maybeFire(Store.instance));
   }
 
@@ -80,6 +83,7 @@ class StepTaskHandler extends TaskHandler {
       notificationText: '${_fmt(steps)} steps today · on this phone only',
     );
     FlutterForegroundTask.sendDataToMain(steps);
+    scheduleQuietStepsWidgetPush(force: true);
   }
 
   @override
