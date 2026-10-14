@@ -1,5 +1,6 @@
 import java.io.FileInputStream
 import java.util.Properties
+import org.gradle.api.GradleException
 
 plugins {
     id("com.android.application")
@@ -41,7 +42,12 @@ android {
             create("release") {
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
-                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                val storeFilePath = requireNotNull(
+                    keystoreProperties.getProperty("storeFile"),
+                ) {
+                    "key.properties is missing storeFile. It must point to the Quiet Steps upload-keystore.jks"
+                }
+                storeFile = file(storeFilePath)
                 storePassword = keystoreProperties.getProperty("storePassword")
             }
         }
@@ -49,11 +55,12 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            if (!keystorePropertiesFile.exists()) {
+                throw GradleException(
+                    "Missing android/key.properties. A release APK cannot be signed with the debug key. Add key.properties with storeFile, storePassword, keyPassword and keyAlias.",
+                )
             }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

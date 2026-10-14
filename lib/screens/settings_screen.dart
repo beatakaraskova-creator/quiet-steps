@@ -39,7 +39,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _save() {
     final s = Store.instance;
     final parsedGoal = int.tryParse(goal.text);
-    if (parsedGoal != null && parsedGoal >= 100) {
+    if (parsedGoal != null && parsedGoal < 100) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Goal must be at least 100')),
+      );
+      return;
+    }
+    if (parsedGoal != null) {
       s.goal = parsedGoal;
     }
     s.heightCm = int.tryParse(height.text) ?? s.heightCm;

@@ -29,6 +29,14 @@ Future<int> applyRawSteps(Store store, int raw) async {
     return 0;
   }
 
+  if (store.skipPausedGap) {
+    // Pause: drop steps taken while stopped. Keep today's total.
+    store.todayOffset = raw - store.todaySteps;
+    store.lastRaw = raw;
+    store.skipPausedGap = false;
+    return store.todaySteps;
+  }
+
   if (raw < store.lastRaw) {
     // Phone rebooted. Raw counter restarted. Keep today's count with a
     // negative offset so the next reading still adds on.

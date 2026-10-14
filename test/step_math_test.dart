@@ -59,6 +59,18 @@ void main() {
     expect(hist.first.steps, 300);
   });
 
+  test('pause skips steps taken while stopped', () async {
+    await fresh();
+    await applyRawSteps(store, 1000);
+    await applyRawSteps(store, 1100);
+    expect(store.todaySteps, 100);
+
+    store.skipPausedGap = true;
+    expect(await applyRawSteps(store, 1600), 100);
+    expect(store.skipPausedGap, isFalse);
+    expect(await applyRawSteps(store, 1610), 110);
+  });
+
   test('reset makes the next raw reading the new zero', () async {
     await fresh();
     await applyRawSteps(store, 2000);

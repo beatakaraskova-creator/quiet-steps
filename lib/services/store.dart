@@ -25,6 +25,7 @@ class Store {
   static const _kLookCustom = 'look_custom';
   static const _kLookAccent = 'look_accent';
   static const _kLookBgColor = 'look_bg_color';
+  static const _kSkipPausedGap = 'skip_paused_gap';
 
   late SharedPreferences _p;
 
@@ -85,6 +86,9 @@ class Store {
 
   int get lookBgColor => _p.getInt(_kLookBgColor) ?? 0xFF141412;
   set lookBgColor(int v) => _p.setInt(_kLookBgColor, v);
+
+  bool get skipPausedGap => _p.getBool(_kSkipPausedGap) ?? false;
+  set skipPausedGap(bool v) => _p.setBool(_kSkipPausedGap, v);
 
   List<DayRecord> history() {
     final raw = _p.getString(_kHistory);

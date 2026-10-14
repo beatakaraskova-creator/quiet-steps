@@ -91,6 +91,9 @@ class StepEngine extends ChangeNotifier {
     try {
       _fgSub = Pedometer.stepCountStream.listen(
         (event) async {
+          if (!Store.instance.counting) {
+            return;
+          }
           if (_serviceOwnsWrites ||
               await FlutterForegroundTask.isRunningService) {
             return;
@@ -113,30 +116,48 @@ class StepEngine extends ChangeNotifier {
 
   Future<void> start() async {
     final ok = await requestPermission();
-    if (!ok) return;
-
-    Store.instance.counting = true;
-    _serviceOwnsWrites = true;
-    await _fgSub?.cancel();
-    _fgSub = null;
-
-    if (await FlutterForegroundTask.isRunningService) {
+    if (!ok) {
+      _serviceOwnsWrites = false;
+      error =
+          'Physical activity permission is needed so the phone can count steps.';
+      _listenForeground();
       notifyListeners();
       return;
     }
 
-    await FlutterForegroundTask.startService(
+    Store.instance.counting = true;
+    await _fgSub?.cancel();
+    _fgSub = null;
+
+    if (await FlutterForegroundTask.isRunningService) {
+      _serviceOwnsWrites = true;
+      notifyListeners();
+      return;
+    }
+
+    _serviceOwnsWrites = true;
+    final result = await FlutterForegroundTask.startService(
       serviceId: 3101,
       notificationTitle: 'Quiet Steps',
       notificationText: 'Counting steps on this phone only',
       callback: stepTaskCallback,
       serviceTypes: [ForegroundServiceTypes.health],
     );
+    if (result is ServiceRequestFailure) {
+      _serviceOwnsWrites = false;
+      error =
+          'Background counting did not start. Counting on this screen instead.';
+      _listenForeground();
+      notifyListeners();
+      return;
+    }
+
     notifyListeners();
   }
 
   Future<void> stop() async {
     Store.instance.counting = false;
+    Store.instance.skipPausedGap = true;
     _serviceOwnsWrites = false;
     await FlutterForegroundTask.stopService();
     _listenForeground();
@@ -148,6 +169,7 @@ class StepEngine extends ChangeNotifier {
       FlutterForegroundTask.sendDataToTask(StepTaskHandler.resetTodayCommand);
       return;
     }
+    await Store.instance.reload();
     resetTodayCount(Store.instance);
     notifyListeners();
   }
