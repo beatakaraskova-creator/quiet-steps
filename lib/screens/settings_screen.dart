@@ -1,7 +1,15 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../l10n/app_text.dart';
 import '../models/look_pack.dart';
+import '../services/backup.dart';
 import '../services/look.dart';
 import '../services/milestones.dart';
 import '../services/reflection.dart';
@@ -32,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late String _quietEnd;
   late bool _eveningOn;
   late String _reflectionTime;
+  bool _busy = false;
 
   @override
   void initState() {
@@ -139,6 +148,268 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  String get _lang => resolveLanguage(
+        stored: _language,
+        deviceLanguageCode:
+            View.of(context).platformDispatcher.locale.languageCode,
+      );
+
+  Future<void> _snack(String msg) async {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Uint8List _backupBytes() {
+    final json = encodeBackup(snapshotFromStore(Store.instance));
+    return Uint8List.fromList(utf8.encode(json));
+  }
+
+  Future<void> _exportMenu() async {
+    if (_busy) return;
+    final p = Look.instance.pack;
+    final lang = _lang;
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: p.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text(
+                    backupUiLine(lang, 'saveFile'),
+                    style: TextStyle(color: p.ink),
+                  ),
+                  onTap: () => Navigator.pop(ctx, 'save'),
+                ),
+                ListTile(
+                  title: Text(
+                    backupUiLine(lang, 'share'),
+                    style: TextStyle(color: p.ink),
+                  ),
+                  onTap: () => Navigator.pop(ctx, 'share'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (choice == 'save') await _exportSave();
+    if (choice == 'share') await _exportShare();
+  }
+
+  Future<void> _exportSave() async {
+    final lang = _lang;
+    setState(() => _busy = true);
+    try {
+      final name = backupFileName(DateTime.now());
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: backupUiLine(lang, 'saveFile'),
+        fileName: name,
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        bytes: _backupBytes(),
+      );
+      if (path == null) {
+        await _snack(backupUiLine(lang, 'cancelled'));
+        return;
+      }
+      await _snack(backupUiLine(lang, 'exported'));
+    } catch (_) {
+      await _snack(backupUiLine(lang, 'exportFailed'));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _exportShare() async {
+    final lang = _lang;
+    setState(() => _busy = true);
+    try {
+      final name = backupFileName(DateTime.now());
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/$name');
+      await file.writeAsBytes(_backupBytes(), flush: true);
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile(file.path, mimeType: 'application/json', name: name),
+          ],
+        ),
+      );
+    } catch (_) {
+      await _snack(backupUiLine(lang, 'exportFailed'));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _import() async {
+    if (_busy) return;
+    final lang = _lang;
+    setState(() => _busy = true);
+    try {
+      final picked = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        withData: true,
+      );
+      if (picked == null || picked.files.isEmpty) {
+        await _snack(backupUiLine(lang, 'cancelled'));
+        return;
+      }
+      final file = picked.files.single;
+      var bytes = file.bytes;
+      if (bytes == null && file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+      if (bytes == null) {
+        await _snack(backupUiLine(lang, 'invalid'));
+        return;
+      }
+      final parsed = parseBackup(utf8.decode(bytes));
+      if (!parsed.isOk) {
+        final key =
+            parsed.error == BackupError.tooNew ? 'tooNew' : 'invalid';
+        await _snack(backupUiLine(lang, key));
+        return;
+      }
+      final data = parsed.snapshot!;
+      if (!mounted) return;
+      final choice = await _confirmImport(data);
+      if (choice == null) return;
+      await applyBackupToStore(Store.instance, data, replace: choice);
+      await Look.instance.load();
+      _reloadFromStore();
+      StepEngine.instance.syncTaskPrefs();
+      ReflectionAlerts.instance.syncSchedule(Store.instance);
+      await _snack(backupUiLine(lang, 'done'));
+    } catch (_) {
+      await _snack(backupUiLine(lang, 'failed'));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<bool?> _confirmImport(BackupSnapshot data) async {
+    final p = Look.instance.pack;
+    final lang = _lang;
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: p.card,
+        title: Text(backupUiLine(lang, 'confirmTitle')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              backupConfirmBody(
+                lang,
+                days: data.history.length,
+                walks: data.walks.length,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              backupUiLine(lang, 'mergeHint'),
+              style: TextStyle(color: p.muted, fontSize: 13, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(backupUiLine(lang, 'keep')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(backupUiLine(lang, 'replace')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              backupUiLine(lang, 'merge'),
+              style: TextStyle(color: p.accent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _reloadFromStore() {
+    final s = Store.instance;
+    goal.text = '${s.goal}';
+    height.text = '${s.heightCm}';
+    stride.text = '${s.strideCm}';
+    weight.text = '${s.weightKg}';
+    _language = s.language;
+    _milestoneOn = s.milestoneMessages;
+    _speakOn = s.speakMessages;
+    _voiceSpeed = s.voiceSpeed;
+    _style = s.milestoneStyle;
+    _quietOn = s.quietHours;
+    _quietStart = s.quietStart;
+    _quietEnd = s.quietEnd;
+    _eveningOn = s.eveningReflection;
+    _reflectionTime = s.reflectionTime;
+  }
+
+  Widget _backupSection(String lang, LookPack p) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      decoration: BoxDecoration(
+        color: p.card,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            backupUiLine(lang, 'section'),
+            style: TextStyle(
+              color: p.ink,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: _busy ? null : _exportMenu,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: p.ink,
+              side: BorderSide(color: p.line),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: Text(backupUiLine(lang, 'export')),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: _busy ? null : _import,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: p.ink,
+              side: BorderSide(color: p.line),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: Text(backupUiLine(lang, 'import')),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = Look.instance.pack;
@@ -220,6 +491,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             () => _pickTime(start: true, reflection: true),
             p,
           ),
+          const SizedBox(height: 8),
+          _backupSection(lang, p),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(16),

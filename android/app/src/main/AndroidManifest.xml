@@ -73,5 +73,17 @@
             <action android:name="android.intent.action.SEND" />
             <data android:mimeType="image/png" />
         </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="application/json" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.OPEN_DOCUMENT" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.CREATE_DOCUMENT" />
+            <data android:mimeType="*/*" />
+        </intent>
     </queries>
 </manifest>
