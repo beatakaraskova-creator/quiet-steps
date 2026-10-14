@@ -12,6 +12,8 @@ void stepTaskCallback() {
 }
 
 class StepTaskHandler extends TaskHandler {
+  static const String resetTodayCommand = 'resetToday';
+
   StreamSubscription<StepCount>? _sub;
 
   @override
@@ -31,6 +33,7 @@ class StepTaskHandler extends TaskHandler {
             notificationTitle: 'Quiet Steps',
             notificationText: '${_fmt(steps)} steps today · on this phone only',
           );
+          FlutterForegroundTask.sendDataToMain(steps);
         },
         onError: (_) {},
       );
@@ -44,6 +47,25 @@ class StepTaskHandler extends TaskHandler {
       notificationTitle: 'Quiet Steps',
       notificationText: '${_fmt(steps)} steps today · on this phone only',
     );
+    FlutterForegroundTask.sendDataToMain(steps);
+  }
+
+  @override
+  void onReceiveData(Object data) {
+    if (data == resetTodayCommand) {
+      unawaited(_resetToday());
+    }
+  }
+
+  Future<void> _resetToday() async {
+    await Store.instance.reload();
+    resetTodayCount(Store.instance);
+    final steps = Store.instance.todaySteps;
+    await FlutterForegroundTask.updateService(
+      notificationTitle: 'Quiet Steps',
+      notificationText: '${_fmt(steps)} steps today · on this phone only',
+    );
+    FlutterForegroundTask.sendDataToMain(steps);
   }
 
   @override

@@ -38,7 +38,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _save() {
     final s = Store.instance;
-    s.goal = int.tryParse(goal.text) ?? s.goal;
+    final parsedGoal = int.tryParse(goal.text);
+    if (parsedGoal != null && parsedGoal >= 100) {
+      s.goal = parsedGoal;
+    }
     s.heightCm = int.tryParse(height.text) ?? s.heightCm;
     s.strideCm = int.tryParse(stride.text) ?? s.strideCm;
     s.weightKg = int.tryParse(weight.text) ?? s.weightKg;

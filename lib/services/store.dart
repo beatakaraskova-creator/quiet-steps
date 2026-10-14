@@ -32,6 +32,10 @@ class Store {
     _p = await SharedPreferences.getInstance();
   }
 
+  Future<void> reload() async {
+    await _p.reload();
+  }
+
   int get goal => _p.getInt(_kGoal) ?? 8000;
   set goal(int v) => _p.setInt(_kGoal, v);
 

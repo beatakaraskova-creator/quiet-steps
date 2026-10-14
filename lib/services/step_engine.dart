@@ -17,6 +17,8 @@ class StepEngine extends ChangeNotifier {
   String? error;
   bool permissionDenied = false;
   bool ready = false;
+  bool _serviceOwnsWrites = false;
+  bool _listeningTaskData = false;
 
   int get steps => Store.instance.todaySteps;
   bool get counting => Store.instance.counting;
@@ -24,6 +26,10 @@ class StepEngine extends ChangeNotifier {
   Future<void> init() async {
     await Store.instance.init();
     FlutterForegroundTask.initCommunicationPort();
+    if (!_listeningTaskData) {
+      FlutterForegroundTask.addTaskDataCallback(_onTaskData);
+      _listeningTaskData = true;
+    }
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'quiet_steps',
@@ -47,10 +53,20 @@ class StepEngine extends ChangeNotifier {
     );
     ready = true;
     notifyListeners();
-    _listenForeground();
     if (Store.instance.counting) {
       await start();
+    } else {
+      _listenForeground();
     }
+  }
+
+  Future<void> refreshFromDisk() async {
+    await Store.instance.reload();
+    notifyListeners();
+  }
+
+  void _onTaskData(Object data) {
+    unawaited(refreshFromDisk());
   }
 
   Future<bool> requestPermission() async {
@@ -75,6 +91,10 @@ class StepEngine extends ChangeNotifier {
     try {
       _fgSub = Pedometer.stepCountStream.listen(
         (event) async {
+          if (_serviceOwnsWrites ||
+              await FlutterForegroundTask.isRunningService) {
+            return;
+          }
           await applyRawSteps(Store.instance, event.steps);
           error = null;
           notifyListeners();
@@ -96,7 +116,9 @@ class StepEngine extends ChangeNotifier {
     if (!ok) return;
 
     Store.instance.counting = true;
-    _listenForeground();
+    _serviceOwnsWrites = true;
+    await _fgSub?.cancel();
+    _fgSub = null;
 
     if (await FlutterForegroundTask.isRunningService) {
       notifyListeners();
@@ -115,20 +137,28 @@ class StepEngine extends ChangeNotifier {
 
   Future<void> stop() async {
     Store.instance.counting = false;
+    _serviceOwnsWrites = false;
     await FlutterForegroundTask.stopService();
+    _listenForeground();
     notifyListeners();
   }
 
   Future<void> resetToday() async {
-    // Next raw reading becomes the new zero for today.
-    Store.instance.todayOffset = Store.instance.lastRaw;
-    Store.instance.todaySteps = 0;
+    if (_serviceOwnsWrites || await FlutterForegroundTask.isRunningService) {
+      FlutterForegroundTask.sendDataToTask(StepTaskHandler.resetTodayCommand);
+      return;
+    }
+    resetTodayCount(Store.instance);
     notifyListeners();
   }
 
   @override
   void dispose() {
     _fgSub?.cancel();
+    if (_listeningTaskData) {
+      FlutterForegroundTask.removeTaskDataCallback(_onTaskData);
+      _listeningTaskData = false;
+    }
     super.dispose();
   }
 }

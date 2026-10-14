@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      setState(() {});
+      engine.refreshFromDisk();
     }
   }
 
@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(width: 10),
                 _stat(
-                  '${((steps / goal) * 100).clamp(0, 999).round()}%',
+                  '${goal <= 0 ? 0 : ((steps / goal) * 100).clamp(0, 999).round()}%',
                   'goal',
                   photo: hasPhoto,
                 ),

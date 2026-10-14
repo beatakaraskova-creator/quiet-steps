@@ -30,9 +30,9 @@ Future<int> applyRawSteps(Store store, int raw) async {
   }
 
   if (raw < store.lastRaw) {
-    // Phone rebooted. Keep today's count and start from the new raw value.
+    // Phone rebooted. Raw counter restarted. Keep today's count with a
+    // negative offset so the next reading still adds on.
     store.todayOffset = raw - store.todaySteps;
-    if (store.todayOffset < 0) store.todayOffset = 0;
   }
 
   var steps = raw - store.todayOffset;
@@ -40,4 +40,10 @@ Future<int> applyRawSteps(Store store, int raw) async {
   store.todaySteps = steps;
   store.lastRaw = raw;
   return steps;
+}
+
+/// Next raw reading becomes the new zero for today.
+void resetTodayCount(Store store) {
+  store.todayOffset = store.lastRaw;
+  store.todaySteps = 0;
 }
