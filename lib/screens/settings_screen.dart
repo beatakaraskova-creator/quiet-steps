@@ -428,6 +428,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text(uiLine(lang, 'settings')),
         backgroundColor: p.bg,
         foregroundColor: p.ink,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         actions: [
           TextButton(
             onPressed: _save,
@@ -436,7 +438,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
         children: [
           _switchTile(
             easyUiLine(lang, 'title'),
@@ -448,7 +450,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             p,
             subtitle: easyUiLine(lang, 'hint'),
           ),
-
+          const SizedBox(height: 18),
           _field(uiLine(lang, 'goalLabel'), goal, p),
           _field(uiLine(lang, 'height'), height, p),
           _field(uiLine(lang, 'stride'), stride, p),
@@ -500,12 +502,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _eveningOn,
             (v) => _touchMilestone(() => _eveningOn = v),
             p,
+            tileKey: const ValueKey('settings-evening-reflection'),
           ),
           _timeTile(
-            reflectionUiLine(lang, 'setting'),
+            reflectionUiLine(lang, 'reflectionTime'),
             _reflectionTime,
             () => _pickTime(start: true, reflection: true),
             p,
+            key: const ValueKey('settings-reflection-time'),
           ),
           const SizedBox(height: 8),
           _backupSection(lang, p),
@@ -533,7 +537,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ? uiLine(lang, 'languageAuto')
         : (languageLabels[current] ?? current);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Material(
         color: p.card,
         borderRadius: BorderRadius.circular(12),
@@ -634,13 +638,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ValueChanged<bool> onChanged,
     LookPack p, {
     String? subtitle,
+    Key? tileKey,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Material(
         color: p.card,
         borderRadius: BorderRadius.circular(12),
         child: SwitchListTile(
+          key: tileKey,
           title: Text(
             label,
             style: TextStyle(color: p.ink, fontSize: 16),
@@ -652,8 +658,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               : Text(subtitle, style: TextStyle(color: p.muted, fontSize: 13)),
           value: value,
           onChanged: onChanged,
-          activeThumbColor: p.accent,
-          contentPadding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+          contentPadding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
         ),
       ),
     );
@@ -667,7 +672,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     LookPack p,
   ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
         decoration: BoxDecoration(
@@ -706,11 +711,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String label,
     String value,
     VoidCallback onTap,
-    LookPack p,
-  ) {
+    LookPack p, {
+    Key? key,
+  }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Material(
+        key: key,
         color: p.card,
         borderRadius: BorderRadius.circular(12),
         child: ListTile(
@@ -730,7 +737,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _field(String label, TextEditingController c, LookPack p) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 18),
       child: TextField(
         controller: c,
         keyboardType: TextInputType.number,

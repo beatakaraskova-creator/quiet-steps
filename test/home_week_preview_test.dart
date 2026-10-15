@@ -46,6 +46,53 @@ void main() {
     expect(find.text('Rest day · 1,200 steps'), findsOneWidget);
   });
 
+  testWidgets('highlight outline follows the tapped day; today keeps a marker', (
+    tester,
+  ) async {
+    await initializeDateFormatting('en');
+    final pack = LookPack.quietGold;
+    final today = DateTime(2026, 10, 14);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          backgroundColor: pack.bg,
+          body: WeekStrip(
+            stepsByDate: {
+              todayKey(DateTime(2026, 10, 12)): 1200,
+              todayKey(DateTime(2026, 10, 13)): 8100,
+              todayKey(today): 5400,
+            },
+            goal: 8000,
+            now: today,
+            language: 'en',
+            pack: pack,
+            fontScale: 1,
+            frosted: false,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    BoxDecoration? deco(String key) {
+      final box = tester.widget<Container>(find.byKey(ValueKey('week-cell-$key')));
+      return box.decoration as BoxDecoration?;
+    }
+
+    expect(deco('2026-10-14')?.border, isNotNull);
+    expect(deco('2026-10-12')?.border, isNull);
+
+    await tester.tap(find.byKey(const ValueKey('week-cell-2026-10-12')));
+    await tester.pumpAndSettle();
+
+    expect(deco('2026-10-12')?.border, isNotNull);
+    expect(deco('2026-10-14')?.border, isNull);
+
+    final todayBar = tester.widget<Container>(find.byKey(const ValueKey('week-today-bar')));
+    final barDeco = todayBar.decoration! as BoxDecoration;
+    expect(barDeco.color, pack.accent.withValues(alpha: 0.55));
+  });
+
   testWidgets('fresh start copy when the streak has restarted', (tester) async {
     await initializeDateFormatting('en');
     final today = DateTime(2026, 10, 14);

@@ -207,6 +207,8 @@ void main() {
         expect(StreakText.goodDays(lang, 5), isNotEmpty, reason: lang);
         expect(StreakText.steps(lang, 1), isNotEmpty, reason: lang);
         expect(StreakText.steps(lang, 5400), isNotEmpty, reason: lang);
+        expect(StreakText.stepsWord(lang, 5400), isNotEmpty, reason: lang);
+        expect(StreakText.steps(lang, 5400).contains(StreakText.stepsWord(lang, 5400)), isTrue);
         expect(languageLabels[lang], isNotEmpty, reason: lang);
       }
     });
@@ -239,6 +241,13 @@ void main() {
       expect(formatCount(10000, 'sk'), isNot('10,000'));
       expect(glanceFormatNumber(4000, 'en'), '4,000');
       expect(StreakText.steps('en', 5400), '5,400 steps');
+    });
+
+    test('decimals use a comma in sk/cs/pl/de/es/fr/it and a point in en', () {
+      expect(formatDecimal(4.99, 'en'), '4.99');
+      for (final lang in ['sk', 'cs', 'pl', 'de', 'es', 'fr', 'it']) {
+        expect(formatDecimal(4.99, lang), '4,99', reason: lang);
+      }
     });
   });
 

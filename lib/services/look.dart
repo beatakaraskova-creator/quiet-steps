@@ -175,11 +175,40 @@ class Look extends ChangeNotifier {
       outlinedButtonTheme: OutlinedButtonThemeData(style: buttonMin),
       textButtonTheme: TextButtonThemeData(style: buttonMin),
       appBarTheme: AppBarTheme(
-        backgroundColor: packLook.bg.withValues(alpha: 0.0),
+        backgroundColor: packLook.bg,
         foregroundColor: packLook.ink,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         centerTitle: false,
         toolbarHeight: easy ? 72 : kToolbarHeight,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return switchOnThumb(packLook);
+          }
+          return switchOffThumb(packLook);
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return packLook.accent;
+          }
+          return packLook.card;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.transparent;
+          }
+          return switchOffOutline(packLook);
+        }),
+        trackOutlineWidth: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected) ? 0.0 : 2.0;
+        }),
+        overlayColor: WidgetStateProperty.all(
+          packLook.accent.withValues(alpha: 0.14),
+        ),
       ),
     );
   }

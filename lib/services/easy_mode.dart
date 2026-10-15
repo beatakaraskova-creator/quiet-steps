@@ -28,6 +28,19 @@ double contrastRatio(Color a, Color b) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+/// Thumb on an accent track: dark when the accent is light enough, otherwise light.
+Color switchOnThumb(LookPack pack) {
+  return ensureContrast(const Color(0xFF1A1208), pack.accent, 4.5);
+}
+
+Color switchOffThumb(LookPack pack) {
+  return ensureContrast(pack.ink, pack.card, 4.5);
+}
+
+Color switchOffOutline(LookPack pack) {
+  return ensureContrast(pack.ink, pack.card, 3.0);
+}
+
 /// Nudge [fg] toward black or white until contrast with [bg] meets [minRatio].
 Color ensureContrast(Color fg, Color bg, double minRatio) {
   if (contrastRatio(fg, bg) >= minRatio) return fg;

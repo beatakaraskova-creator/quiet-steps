@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../l10n/easy_text.dart';
+import '../l10n/glance_text.dart';
 import '../l10n/streak_text.dart';
 import '../l10n/ui_text.dart';
 import '../l10n/walk_text.dart';
@@ -210,6 +211,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         title: Text(
           'QUIET STEPS',
           style: TextStyle(
@@ -283,7 +286,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      uiFill(lang, 'ofToday', n: _fmt(goal)),
+                      steps >= goal && goal > 0
+                          ? glanceGoalReached(lang)
+                          : uiFill(lang, 'ofToday', n: _fmt(goal)),
+                      key: const ValueKey('home-status'),
                       style: TextStyle(
                         color: look.muted,
                         shadows: _photoShadow(hasPhoto),
@@ -318,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             Row(
               children: [
                 _stat(
-                  store.kmToday.toStringAsFixed(2),
+                  formatDecimal(store.kmToday, lang),
                   uiLine(lang, 'km'),
                   photo: hasPhoto,
                 ),
@@ -529,6 +535,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         backgroundColor: pack.bg,
         foregroundColor: pack.ink,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         title: Text(
           uiLine(lang, 'appName'),
           style: TextStyle(

@@ -9,3 +9,19 @@ String formatCount(int n, String language) {
     return NumberFormat.decimalPattern('en').format(n);
   }
 }
+
+/// Decimal numbers for the chosen language (4.99 in en, 4,99 in sk/cs/pl/de/es/fr/it).
+String formatDecimal(num n, String language, {int digits = 2}) {
+  final lang = language.isEmpty ? 'en' : language;
+  try {
+    return NumberFormat.decimalPatternDigits(
+      locale: lang,
+      decimalDigits: digits,
+    ).format(n);
+  } catch (_) {
+    return NumberFormat.decimalPatternDigits(
+      locale: 'en',
+      decimalDigits: digits,
+    ).format(n);
+  }
+}

@@ -139,41 +139,49 @@ const reflectionSummary = {
 const reflectionUi = {
   'en': {
     'setting': 'Evening reflection',
+    'reflectionTime': 'Reflection time',
     'card': "Today's reflection",
     'readAloud': 'Read aloud',
   },
   'sk': {
     'setting': 'Večerné zamyslenie',
+    'reflectionTime': 'Čas zamyslenia',
     'card': 'Dnešné zamyslenie',
     'readAloud': 'Prečítať nahlas',
   },
   'cs': {
     'setting': 'Večerní zamyšlení',
+    'reflectionTime': 'Čas zamyšlení',
     'card': 'Dnešní zamyšlení',
     'readAloud': 'Číst nahlas',
   },
   'pl': {
     'setting': 'Wieczorna refleksja',
+    'reflectionTime': 'Czas refleksji',
     'card': 'Dzisiejsza refleksja',
     'readAloud': 'Przeczytaj na głos',
   },
   'de': {
     'setting': 'Abendliche Rückschau',
+    'reflectionTime': 'Zeit der Rückschau',
     'card': 'Heutige Rückschau',
     'readAloud': 'Vorlesen',
   },
   'es': {
     'setting': 'Reflexión de la tarde',
+    'reflectionTime': 'Hora de la reflexión',
     'card': 'Reflexión de hoy',
     'readAloud': 'Leer en voz alta',
   },
   'fr': {
     'setting': 'Regard du soir',
+    'reflectionTime': 'Heure du regard',
     'card': 'Le regard d\'aujourd\'hui',
     'readAloud': 'Lire à voix haute',
   },
   'it': {
     'setting': 'Riflessione della sera',
+    'reflectionTime': 'Orario della riflessione',
     'card': 'Riflessione di oggi',
     'readAloud': 'Leggi ad alta voce',
   },

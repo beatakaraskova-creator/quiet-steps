@@ -92,6 +92,15 @@ class StreakText {
     return _form(_steps, language, n);
   }
 
+  /// Unit word only, so a big number can stand on its own ("steps" / "krokov").
+  static String stepsWord(String language, int n) {
+    final lang = _lang(language);
+    final forms = _steps[lang] ?? _steps['en']!;
+    final key = _plural(lang, n);
+    final template = forms[key] ?? forms['other'] ?? _steps['en']!['other']!;
+    return template.replaceAll('{n}', '').trim();
+  }
+
   static String restDay(String language) =>
       _restDay[_lang(language)] ?? _restDay['en']!;
 

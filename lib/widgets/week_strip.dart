@@ -160,9 +160,12 @@ class _DayCell extends StatelessWidget {
         : day.steps <= 0
             ? 3.0
             : (6.0 + t * (maxH - 6.0));
+    final inProgressToday = day.isToday && !day.metGoal && !day.isFuture;
     final barColor = day.metGoal
         ? pack.accent
-        : pack.muted.withValues(alpha: day.isFuture ? 0.28 : 0.55);
+        : inProgressToday
+            ? pack.accent.withValues(alpha: 0.55)
+            : pack.muted.withValues(alpha: day.isFuture ? 0.28 : 0.55);
 
     return GestureDetector(
       onTap: onTap,
@@ -177,15 +180,30 @@ class _DayCell extends StatelessWidget {
               overflow: TextOverflow.clip,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: day.isToday ? pack.ink : pack.muted,
+                color: day.isToday || selected ? pack.ink : pack.muted,
                 fontSize: 11,
-                fontWeight: day.isToday ? FontWeight.w600 : FontWeight.w400,
+                fontWeight: day.isToday ? FontWeight.w700 : FontWeight.w400,
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(
+              height: 8,
+              child: day.isToday
+                  ? Center(
+                      child: Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: pack.accent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
             Container(
+              key: ValueKey('week-cell-${day.key}'),
               height: maxH + 10,
-              decoration: day.isToday
+              decoration: selected
                   ? BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
@@ -203,6 +221,9 @@ class _DayCell extends StatelessWidget {
                       color: pack.accent.withValues(alpha: 0.85),
                     )
                   : Container(
+                      key: day.isToday
+                          ? const ValueKey('week-today-bar')
+                          : null,
                       width: 8,
                       height: barH,
                       decoration: BoxDecoration(
