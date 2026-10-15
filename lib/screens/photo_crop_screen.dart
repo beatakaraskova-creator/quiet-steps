@@ -5,6 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../l10n/ui_text.dart';
+import '../services/app_locale.dart';
 import '../services/look.dart';
 
 /// Full-screen crop. Starts with the whole photo visible and centred.
@@ -209,7 +211,7 @@ class _PhotoCropScreenState extends State<PhotoCropScreen> {
                     children: [
                       Expanded(
                         child: _actionButton(
-                          label: 'Cancel',
+                          label: uiLine(currentLanguage(), 'cancel'),
                           onPressed: _busy
                               ? null
                               : () => Navigator.pop(context, false),
@@ -218,14 +220,14 @@ class _PhotoCropScreenState extends State<PhotoCropScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: _actionButton(
-                          label: 'Fill',
+                          label: uiLine(currentLanguage(), 'fill'),
                           onPressed: _busy ? null : _fillScreen,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: _actionButton(
-                          label: 'Use',
+                          label: uiLine(currentLanguage(), 'use'),
                           onPressed: (_busy || !_ready) ? null : _use,
                           busy: _busy,
                         ),

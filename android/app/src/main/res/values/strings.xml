@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Quiet Steps</string>
     <string name="widget_small_label">Quiet Steps</string>
     <string name="widget_small_description">Today\'s steps and a progress bar</string>
     <string name="widget_medium_label">Quiet Steps</string>
     <string name="widget_medium_description">Today\'s steps, streak and status</string>
+    <string name="fg_channel_name">Quiet Steps</string>
+    <string name="fg_channel_desc">Step counting on this phone. Nothing is sent.</string>
+    <string name="milestone_channel_name">Milestone messages</string>
+    <string name="milestone_channel_desc">Gentle messages when you reach a walking milestone.</string>
+    <string name="reflection_channel_name">Evening reflection</string>
+    <string name="reflection_channel_desc">A gentle summary of the day.</string>
 </resources>

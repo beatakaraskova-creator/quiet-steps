@@ -2,6 +2,8 @@
 /// Unknown language falls back to English.
 library;
 
+import 'package:intl/intl.dart';
+
 const _goodDays = <String, Map<String, String>>{
   'en': {'one': '{n} good day', 'other': '{n} good days'},
   'sk': {
@@ -112,7 +114,7 @@ class StreakText {
     final forms = table[lang] ?? table['en']!;
     final key = _plural(lang, n);
     final template = forms[key] ?? forms['other'] ?? table['en']!['other']!;
-    return template.replaceAll('{n}', _fmt(n));
+    return template.replaceAll('{n}', _fmt(n, lang));
   }
 
   static String _plural(String lang, int n) {
@@ -138,10 +140,11 @@ class StreakText {
     }
   }
 
-  static String _fmt(int n) {
-    return n.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
+  static String _fmt(int n, String language) {
+    try {
+      return NumberFormat.decimalPattern(language).format(n);
+    } catch (_) {
+      return NumberFormat.decimalPattern('en').format(n);
+    }
   }
 }

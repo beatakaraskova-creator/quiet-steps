@@ -172,7 +172,7 @@ GlanceData buildGlanceData({
     steps: safeSteps,
     goal: safeGoal,
     progressPermille: glanceProgressPermille(safeSteps, safeGoal),
-    stepsLabel: glanceFormatNumber(safeSteps),
+    stepsLabel: glanceFormatNumber(safeSteps, lang),
     statusLine: glanceStatusLine(
       language: lang,
       steps: safeSteps,

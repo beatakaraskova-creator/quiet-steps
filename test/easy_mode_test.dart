@@ -6,6 +6,7 @@ import 'package:quiet_steps/main.dart';
 import 'package:quiet_steps/models/look_pack.dart';
 import 'package:quiet_steps/screens/home_screen.dart';
 import 'package:quiet_steps/screens/onboarding_screen.dart';
+import 'package:quiet_steps/services/app_locale.dart';
 import 'package:quiet_steps/services/easy_mode.dart';
 import 'package:quiet_steps/services/look.dart';
 import 'package:quiet_steps/services/milestones.dart';
@@ -18,9 +19,11 @@ Future<void> _boot({
   bool easy = false,
   String language = 'en',
   bool onboardingDone = true,
+  bool languagePicked = true,
 }) async {
   SharedPreferences.setMockInitialValues({
     'onboarding_done': onboardingDone,
+    'language_picked': languagePicked,
     'goal': 8000,
     'today_steps': 4218,
     'today_date': '2026-10-15',
@@ -31,10 +34,12 @@ Future<void> _boot({
   });
   await Store.instance.init();
   Store.instance.onboardingDone = onboardingDone;
+  Store.instance.languagePicked = languagePicked;
   Store.instance.language = language;
   Store.instance.bigSimple = easy;
   Store.instance.counting = false;
   Store.instance.eveningReflection = false;
+  AppLocale.instance.load(deviceLanguageCode: 'en');
   await Look.instance.load();
 }
 
@@ -245,7 +250,7 @@ void main() {
 
   group('onboarding', () {
     testWidgets('offers Big and simple on the last page', (tester) async {
-      await _boot(onboardingDone: false, easy: false);
+      await _boot(onboardingDone: false, languagePicked: true, easy: false);
       await _pumpApp(tester);
       expect(find.byType(OnboardingScreen), findsOneWidget);
       await tester.tap(find.text('Skip'));

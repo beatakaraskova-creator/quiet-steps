@@ -1,11 +1,10 @@
-import 'dart:ui' show PlatformDispatcher;
-
 import 'package:flutter/material.dart';
 
-import '../l10n/app_text.dart';
 import '../l10n/easy_text.dart';
+import '../l10n/ui_text.dart';
 import '../models/look_pack.dart';
-import '../services/milestones.dart';
+import '../services/app_locale.dart';
+import '../services/easy_mode.dart';
 import '../services/look.dart';
 import '../services/step_engine.dart';
 import '../services/store.dart';
@@ -46,10 +45,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  String get _onboardLang => resolveLanguage(
-        stored: Store.instance.language,
-        deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
-      );
+  String get _onboardLang => currentLanguage();
 
   Future<void> _next() async {
     if (_index < 2) {
@@ -64,7 +60,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final parsed = int.tryParse(_goal.text.trim());
     if (parsed == null || parsed < 100) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppText.goalMustBe100)),
+        SnackBar(content: Text(uiLine(_onboardLang, 'goalMustBe100'))),
       );
       return;
     }
@@ -93,7 +89,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           if (_index < 2)
             TextButton(
               onPressed: () => _goTo(2),
-              child: Text(AppText.skip, style: TextStyle(color: p.muted)),
+              child: Text(uiLine(_onboardLang, 'skip'), style: TextStyle(color: p.muted)),
             ),
         ],
       ),
@@ -109,19 +105,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: [
                     _page(
                       p,
-                      title: AppText.appName,
-                      body: AppText.page1Body,
+                      title: uiLine(_onboardLang, 'appName'),
+                      body: uiLine(_onboardLang, 'page1Body'),
                       showIcon: true,
                     ),
                     _page(
                       p,
-                      title: AppText.page2Title,
-                      body: AppText.page2Body,
+                      title: uiLine(_onboardLang, 'page2Title'),
+                      body: uiLine(_onboardLang, 'page2Body'),
                     ),
                     _page(
                       p,
-                      title: AppText.page3Title,
-                      body: AppText.page3Body,
+                      title: uiLine(_onboardLang, 'page3Title'),
+                      body: uiLine(_onboardLang, 'page3Body'),
                       showGoal: true,
                     ),
                   ],
@@ -151,6 +147,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   style: FilledButton.styleFrom(
                     backgroundColor: p.accent,
                     foregroundColor: p.onAccent,
+                    minimumSize: Size(
+                      double.infinity,
+                      Look.instance.bigSimple ? easyTapMin : 52,
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -166,7 +166,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         )
                       : Text(
-                          _index == 2 ? AppText.getStarted : AppText.next,
+                          _index == 2
+                              ? uiLine(_onboardLang, 'getStarted')
+                              : uiLine(_onboardLang, 'next'),
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
@@ -226,7 +228,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               keyboardType: TextInputType.number,
               style: TextStyle(color: p.ink),
               decoration: InputDecoration(
-                labelText: AppText.goalLabel,
+                labelText: uiLine(_onboardLang, 'goalLabel'),
                 labelStyle: TextStyle(color: p.muted),
                 filled: true,
                 fillColor: p.card,

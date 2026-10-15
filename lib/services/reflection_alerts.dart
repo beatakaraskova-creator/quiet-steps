@@ -1,9 +1,12 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../l10n/ui_text.dart';
 import '../screens/reflection_screen.dart';
 import 'milestones.dart';
 import 'reflection.dart';
@@ -20,13 +23,22 @@ class ReflectionAlerts {
   static const payload = 'evening_reflection';
   static const notifId = 8100;
   static const _channelId = 'quiet_steps_reflection';
-  static const _channelName = 'Evening reflection';
-  static const _channelDesc = 'A gentle summary of the day.';
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   bool _inited = false;
   bool _tzReady = false;
+
+  String _copyLang() {
+    try {
+      return resolveLanguage(
+        stored: Store.instance.language,
+        deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
+      );
+    } catch (_) {
+      return 'en';
+    }
+  }
 
   Future<void> init() async {
     if (_inited) return;
@@ -36,10 +48,11 @@ class ReflectionAlerts {
         const InitializationSettings(android: android),
         onDidReceiveNotificationResponse: _onTap,
       );
-      const channel = AndroidNotificationChannel(
+      final lang = _copyLang();
+      final channel = AndroidNotificationChannel(
         _channelId,
-        _channelName,
-        description: _channelDesc,
+        uiLine(lang, 'reflectionChannel'),
+        description: uiLine(lang, 'reflectionChannelDesc'),
         importance: Importance.low,
         playSound: false,
         showBadge: false,
@@ -105,13 +118,13 @@ class ReflectionAlerts {
     try {
       await _plugin.show(
         notifId,
-        'Quiet Steps',
+        uiLine(_copyLang(), 'appName'),
         body,
         NotificationDetails(
           android: AndroidNotificationDetails(
             _channelId,
-            _channelName,
-            channelDescription: _channelDesc,
+            uiLine(_copyLang(), 'reflectionChannel'),
+            channelDescription: uiLine(_copyLang(), 'reflectionChannelDesc'),
             importance: Importance.low,
             priority: Priority.low,
             playSound: !silent,
@@ -149,14 +162,14 @@ class ReflectionAlerts {
       final body = reflectionUiLine(language, 'card');
       await _plugin.zonedSchedule(
         notifId,
-        'Quiet Steps',
+        uiLine(language, 'appName'),
         body,
         when,
         NotificationDetails(
           android: AndroidNotificationDetails(
             _channelId,
-            _channelName,
-            channelDescription: _channelDesc,
+            uiLine(language, 'reflectionChannel'),
+            channelDescription: uiLine(language, 'reflectionChannelDesc'),
             importance: Importance.low,
             priority: Priority.low,
             playSound: !silent,

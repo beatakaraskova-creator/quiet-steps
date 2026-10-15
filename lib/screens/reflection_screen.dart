@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/app_locale.dart';
 import '../services/look.dart';
 import '../services/milestones.dart';
 import '../services/reflection.dart';
@@ -24,11 +25,7 @@ class _ReflectionScreenState extends State<ReflectionScreen> {
     super.initState();
     final store = Store.instance;
     final now = DateTime.now();
-    _language = resolveLanguage(
-      stored: store.language,
-      deviceLanguageCode:
-          WidgetsBinding.instance.platformDispatcher.locale.languageCode,
-    );
+    _language = currentLanguage();
     _copy = buildReflectionCopy(
       steps: store.todaySteps,
       goal: store.goal,

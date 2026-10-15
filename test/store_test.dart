@@ -26,9 +26,11 @@ void main() {
     expect(store.quietStart, '22:00');
     expect(store.quietEnd, '07:00');
     expect(store.language, 'auto');
+    expect(store.languagePicked, isFalse);
     expect(store.eveningReflection, isTrue);
     expect(store.reflectionTime, '20:30');
 
+    store.languagePicked = true;
     store.language = 'sk';
     store.speakMessages = true;
     store.voiceSpeed = 'slow';
@@ -40,6 +42,7 @@ void main() {
     store.eveningReflection = false;
     store.reflectionTime = '21:15';
 
+    expect(store.languagePicked, isTrue);
     expect(store.language, 'sk');
     expect(store.speakMessages, isTrue);
     expect(store.voiceSpeed, 'slow');

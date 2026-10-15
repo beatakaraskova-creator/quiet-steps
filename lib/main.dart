@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'screens/home_screen.dart';
+import 'screens/language_picker_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/app_locale.dart';
 import 'services/easy_mode.dart';
 import 'services/glance.dart';
 import 'services/look.dart';
@@ -19,6 +21,7 @@ Future<void> main() async {
     await initializeDateFormatting(lang);
   }
   await StepEngine.instance.init();
+  AppLocale.instance.load();
   await Look.instance.load();
   await pushQuietStepsWidget(force: true);
   await ReflectionAlerts.instance.init();
@@ -33,7 +36,7 @@ class QuietStepsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Look.instance,
+      animation: Listenable.merge([Look.instance, AppLocale.instance]),
       builder: (context, _) {
         final look = Look.instance;
         final light = look.pack.light;
@@ -60,7 +63,9 @@ class QuietStepsApp extends StatelessWidget {
           },
           home: Store.instance.onboardingDone
               ? const HomeScreen()
-              : const OnboardingScreen(),
+              : Store.instance.languagePicked
+                  ? const OnboardingScreen()
+                  : const LanguagePickerScreen(),
         );
       },
     );

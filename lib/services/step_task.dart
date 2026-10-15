@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:pedometer/pedometer.dart';
 
+import '../l10n/ui_text.dart';
+import 'format.dart';
 import 'glance.dart';
 import 'milestone_alerts.dart';
+import 'milestones.dart';
 import 'reflection_alerts.dart';
 import 'step_math.dart';
 import 'store.dart';
@@ -37,8 +41,8 @@ class StepTaskHandler extends TaskHandler {
           final previous = store.todaySteps;
           final steps = await applyRawSteps(store, event.steps);
           await FlutterForegroundTask.updateService(
-            notificationTitle: 'Quiet Steps',
-            notificationText: '${_fmt(steps)} steps today · on this phone only',
+            notificationTitle: uiLine(_lang(), 'appName'),
+            notificationText: _notice(steps),
           );
           FlutterForegroundTask.sendDataToMain(steps);
           scheduleQuietStepsWidgetPush();
@@ -57,8 +61,8 @@ class StepTaskHandler extends TaskHandler {
   void onRepeatEvent(DateTime timestamp) {
     final steps = Store.instance.todaySteps;
     FlutterForegroundTask.updateService(
-      notificationTitle: 'Quiet Steps',
-      notificationText: '${_fmt(steps)} steps today · on this phone only',
+      notificationTitle: uiLine(_lang(), 'appName'),
+      notificationText: _notice(steps),
     );
     FlutterForegroundTask.sendDataToMain(steps);
     scheduleQuietStepsWidgetPush();
@@ -79,8 +83,8 @@ class StepTaskHandler extends TaskHandler {
     resetTodayCount(Store.instance);
     final steps = Store.instance.todaySteps;
     await FlutterForegroundTask.updateService(
-      notificationTitle: 'Quiet Steps',
-      notificationText: '${_fmt(steps)} steps today · on this phone only',
+      notificationTitle: uiLine(_lang(), 'appName'),
+      notificationText: _notice(steps),
     );
     FlutterForegroundTask.sendDataToMain(steps);
     scheduleQuietStepsWidgetPush(force: true);
@@ -91,10 +95,15 @@ class StepTaskHandler extends TaskHandler {
     await _sub?.cancel();
   }
 
-  String _fmt(int n) {
-    return n.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
+  String _lang() {
+    return resolveLanguage(
+      stored: Store.instance.language,
+      deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
     );
+  }
+
+  String _notice(int steps) {
+    final lang = _lang();
+    return uiFill(lang, 'fgStepsToday', n: formatCount(steps, lang));
   }
 }

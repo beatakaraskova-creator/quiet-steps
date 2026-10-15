@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/material.dart';
 
 import '../l10n/easy_text.dart';
 import '../l10n/streak_text.dart';
+import '../l10n/ui_text.dart';
 import '../l10n/walk_text.dart';
 import '../models/look_pack.dart';
+import '../services/app_locale.dart';
 import '../services/easy_mode.dart';
+import '../services/format.dart';
 import '../services/glance.dart';
 import '../services/postcard.dart';
 import '../services/look.dart';
-import '../services/milestones.dart';
 import '../services/reflection.dart';
 import '../services/reflection_alerts.dart';
 import '../services/step_engine.dart';
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     engine.addListener(_tick);
     Look.instance.addListener(_tick);
+    AppLocale.instance.addListener(_tick);
     if (Store.instance.walkActive) _ensureWalkTimer();
   }
 
@@ -55,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     engine.removeListener(_tick);
     Look.instance.removeListener(_tick);
+    AppLocale.instance.removeListener(_tick);
     _stopWalkTimer();
     super.dispose();
   }
@@ -71,12 +74,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (mounted) setState(() {});
   }
 
-  String _language() {
-    return resolveLanguage(
-      stored: Store.instance.language,
-      deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
-    );
-  }
+  String _language() => currentLanguage();
 
   void _ensureWalkTimer() {
     _walkTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
@@ -171,12 +169,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (mounted) setState(() {});
   }
 
-  String _fmt(int n) {
-    return n.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
-  }
+  String _fmt(int n) => formatCount(n, _language());
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
         actions: [
           IconButton(
-            tooltip: 'Look',
+            tooltip: uiLine(lang, 'look'),
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const LookScreen()),
@@ -240,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             icon: Icon(Icons.palette_outlined, color: look.muted),
           ),
           IconButton(
-            tooltip: 'History',
+            tooltip: uiLine(lang, 'history'),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const HistoryScreen()),
@@ -249,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             icon: Icon(Icons.calendar_today_outlined, color: look.muted),
           ),
           IconButton(
-            tooltip: 'Settings',
+            tooltip: uiLine(lang, 'settings'),
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -290,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'of ${_fmt(goal)} today',
+                      uiFill(lang, 'ofToday', n: _fmt(goal)),
                       style: TextStyle(
                         color: look.muted,
                         shadows: _photoShadow(hasPhoto),
@@ -326,19 +319,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               children: [
                 _stat(
                   store.kmToday.toStringAsFixed(2),
-                  'km',
+                  uiLine(lang, 'km'),
                   photo: hasPhoto,
                 ),
                 const SizedBox(width: 10),
                 _stat(
                   '${store.kcalToday}',
-                  'kcal',
+                  uiLine(lang, 'kcal'),
                   photo: hasPhoto,
                 ),
                 const SizedBox(width: 10),
                 _stat(
                   '${goal <= 0 ? 0 : ((steps / goal) * 100).clamp(0, 999).round()}%',
-                  'goal',
+                  uiLine(lang, 'goalPct'),
                   photo: hasPhoto,
                 ),
               ],
@@ -348,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               Padding(
                 padding: EdgeInsets.only(bottom: 12),
                 child: Text(
-                  'Physical activity permission is needed so the phone can count steps. Location is not used.',
+                  uiLine(lang, 'permissionDenied'),
                   style: TextStyle(color: look.muted, height: 1.4),
                 ),
               ),
@@ -383,7 +376,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             : BorderSide.none,
                       ),
                     ),
-                    child: Text(engine.counting ? 'Pause counting' : 'Start counting'),
+                    child: Text(
+                      engine.counting
+                          ? uiLine(lang, 'pauseCounting')
+                          : uiLine(lang, 'startCounting'),
+                    ),
                   ),
                 ),
               ],
@@ -420,18 +417,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: look.card,
-                    title: const Text('Reset today?'),
-                    content: const Text(
-                      'Today’s count goes back to zero. History stays.',
-                    ),
+                    title: Text(uiLine(lang, 'resetTodayTitle')),
+                    content: Text(uiLine(lang, 'resetTodayBody')),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Keep'),
+                        child: Text(uiLine(lang, 'keep')),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Reset'),
+                        child: Text(uiLine(lang, 'reset')),
                       ),
                     ],
                   ),
@@ -439,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 if (ok == true) engine.resetToday();
               },
               child: Text(
-                'Reset today',
+                uiLine(lang, 'resetToday'),
                 style: TextStyle(
                   color: look.muted,
                   shadows: _photoShadow(hasPhoto),
@@ -461,6 +456,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     child: Text(
                       walkUiLine(lang, 'journal'),
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: look.muted,
                         shadows: _photoShadow(hasPhoto),
@@ -480,6 +477,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     child: Text(
                       postcardUiLine(lang, 'title'),
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: look.muted,
                         shadows: _photoShadow(hasPhoto),
@@ -498,8 +497,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               padding: const EdgeInsets.all(16),
               child: Text(
                 engine.counting
-                    ? 'Counting in the background. Keep the notification on. No GPS. No internet. Data stays on this phone.'
-                    : 'Tap Start. Walk with the phone on you. You can leave the app — the notification means it is still counting.',
+                    ? uiLine(lang, 'countingOn')
+                    : uiLine(lang, 'countingOff'),
                 style: TextStyle(
                   color: look.muted,
                   height: 1.45,
@@ -531,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         backgroundColor: pack.bg,
         foregroundColor: pack.ink,
         title: Text(
-          'Quiet Steps',
+          uiLine(lang, 'appName'),
           style: TextStyle(
             fontSize: 18 * scale,
             fontWeight: FontWeight.w600,
@@ -599,7 +598,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             width: easyRingSize,
                             child: Text(
                               engine.error ??
-                                  'Physical activity permission is needed so the phone can count steps. Location is not used.',
+                                  uiLine(lang, 'permissionDenied'),
                               textAlign: TextAlign.center,
                               maxLines: 4,
                               overflow: TextOverflow.ellipsis,
@@ -956,10 +955,7 @@ class _EasyWeekScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = Store.instance;
     final pack = Look.instance.pack;
-    final lang = resolveLanguage(
-      stored: store.language,
-      deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
-    );
+    final lang = currentLanguage();
     final map = <String, int>{
       for (final d in store.history()) d.date: d.steps,
     };

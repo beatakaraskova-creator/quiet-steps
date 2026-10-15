@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../l10n/ui_text.dart';
 import '../models/day_record.dart';
+import '../services/app_locale.dart';
+import '../services/format.dart';
 import '../services/look.dart';
 import '../services/store.dart';
 
@@ -12,6 +15,7 @@ class HistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = Store.instance;
     final p = Look.instance.pack;
+    final lang = currentLanguage();
     final items = <DayRecord>[
       DayRecord(date: store.todayDate.isEmpty ? _today() : store.todayDate, steps: store.todaySteps),
       ...store.history().where((e) => e.date != store.todayDate),
@@ -20,13 +24,13 @@ class HistoryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: p.bg,
       appBar: AppBar(
-        title: const Text('History'),
+        title: Text(uiLine(lang, 'history')),
         backgroundColor: p.bg,
         foregroundColor: p.ink,
       ),
       body: items.isEmpty
           ? Center(
-              child: Text('No days yet.', style: TextStyle(color: p.muted)),
+              child: Text(uiLine(lang, 'noDaysYet'), style: TextStyle(color: p.muted)),
             )
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -36,7 +40,7 @@ class HistoryScreen extends StatelessWidget {
                 final d = items[i];
                 String label;
                 try {
-                  label = DateFormat.MMMEd().format(DateTime.parse(d.date));
+                  label = DateFormat.MMMEd(lang).format(DateTime.parse(d.date));
                 } catch (_) {
                   label = d.date;
                 }
@@ -51,7 +55,7 @@ class HistoryScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          isToday ? '$label  ·  today' : label,
+                          isToday ? '$label  ·  ${uiLine(lang, 'today')}' : label,
                           style: TextStyle(fontSize: 15, color: p.ink),
                         ),
                       ),
@@ -75,10 +79,5 @@ class HistoryScreen extends StatelessWidget {
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
-  String _fmt(int n) {
-    return n.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
-  }
+  String _fmt(int n) => formatCount(n, currentLanguage());
 }

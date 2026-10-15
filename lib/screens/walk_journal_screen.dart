@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 
 import '../l10n/streak_text.dart';
 import '../models/walk_entry.dart';
+import '../services/app_locale.dart';
 import '../services/look.dart';
-import '../services/milestones.dart';
 import '../services/store.dart';
 import '../services/walks.dart';
 
@@ -16,11 +16,7 @@ class WalkJournalScreen extends StatefulWidget {
 }
 
 class _WalkJournalScreenState extends State<WalkJournalScreen> {
-  String get _lang => resolveLanguage(
-        stored: Store.instance.language,
-        deviceLanguageCode:
-            View.of(context).platformDispatcher.locale.languageCode,
-      );
+  String get _lang => currentLanguage();
 
   Future<void> _confirmDelete(WalkEntry entry) async {
     final p = Look.instance.pack;

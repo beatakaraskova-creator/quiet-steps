@@ -10,8 +10,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../models/walk_entry.dart';
+import '../services/app_locale.dart';
 import '../services/look.dart';
-import '../services/milestones.dart';
 import '../services/postcard.dart';
 import '../services/step_math.dart';
 import '../services/store.dart';
@@ -36,11 +36,7 @@ class _PostcardScreenState extends State<PostcardScreen> {
     _month = DateTime(now.year, now.month, 1);
   }
 
-  String get _lang => resolveLanguage(
-        stored: Store.instance.language,
-        deviceLanguageCode:
-            View.of(context).platformDispatcher.locale.languageCode,
-      );
+  String get _lang => currentLanguage();
 
   Map<String, int> _stepsByDate(Store store) {
     final map = <String, int>{

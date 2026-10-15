@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/ui_text.dart';
 import '../models/look_pack.dart';
+import '../services/app_locale.dart';
 import '../services/look.dart';
 import '../widgets/colour_wheel.dart';
 import 'photo_crop_screen.dart';
@@ -14,6 +16,7 @@ class LookScreen extends StatelessWidget {
     required bool background,
   }) async {
     final start = look.pack;
+    final lang = currentLanguage();
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: start.card,
@@ -43,7 +46,9 @@ class LookScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                background ? 'Background colour' : 'Accent colour',
+                background
+                    ? uiLine(lang, 'background')
+                    : uiLine(lang, 'accent'),
                 style: TextStyle(
                   color: p.ink,
                   fontSize: 18,
@@ -53,8 +58,8 @@ class LookScreen extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 background
-                    ? 'The page behind the ring and cards'
-                    : 'The ring, buttons and highlights',
+                    ? uiLine(lang, 'backgroundHint')
+                    : uiLine(lang, 'accentHint'),
                 style: TextStyle(color: p.muted, fontSize: 13),
               ),
               const SizedBox(height: 18),
@@ -78,7 +83,7 @@ class LookScreen extends StatelessWidget {
                     foregroundColor: p.onAccent,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: const Text('Done'),
+                  child: Text(uiLine(lang, 'done')),
                 ),
               ),
             ],
@@ -95,12 +100,13 @@ class LookScreen extends StatelessWidget {
       animation: look,
       builder: (context, _) {
         final p = look.pack;
+        final lang = currentLanguage();
         final hasPhoto = look.backgroundPath != null;
         final customOn = p.id == 'custom';
         return Scaffold(
           backgroundColor: p.bg,
           appBar: AppBar(
-            title: const Text('Look'),
+            title: Text(uiLine(lang, 'lookTitle')),
             backgroundColor: p.bg,
             foregroundColor: p.ink,
           ),
@@ -108,7 +114,7 @@ class LookScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
             children: [
               Text(
-                'Your colours',
+                uiLine(lang, 'yourColours'),
                 style: TextStyle(color: p.muted, letterSpacing: 1.2),
               ),
               const SizedBox(height: 10),
@@ -125,7 +131,8 @@ class LookScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _colourCircle(
-                        label: 'Accent',
+                        label: uiLine(lang, 'accent'),
+                        hint: uiLine(lang, 'tapToPick'),
                         color: p.accent,
                         ink: p.ink,
                         muted: p.muted,
@@ -135,7 +142,8 @@ class LookScreen extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _colourCircle(
-                        label: 'Background',
+                        label: uiLine(lang, 'background'),
+                        hint: uiLine(lang, 'tapToPick'),
                         color: p.bg,
                         ink: p.ink,
                         muted: p.muted,
@@ -147,7 +155,7 @@ class LookScreen extends StatelessWidget {
               ),
               const SizedBox(height: 22),
               Text(
-                'Packs',
+                uiLine(lang, 'packs'),
                 style: TextStyle(color: p.muted, letterSpacing: 1.2),
               ),
               const SizedBox(height: 10),
@@ -165,14 +173,17 @@ class LookScreen extends StatelessWidget {
                           : BorderSide.none,
                     ),
                     leading: CircleAvatar(backgroundColor: pack.accent),
-                    title: Text(pack.name, style: TextStyle(color: pack.ink)),
+                    title: Text(
+                      uiLine(lang, 'pack_${pack.id}'),
+                      style: TextStyle(color: pack.ink),
+                    ),
                     trailing: on ? Icon(Icons.check, color: pack.accent) : null,
                   ),
                 );
               }),
               const SizedBox(height: 22),
               Text(
-                'Background photo',
+                uiLine(lang, 'backgroundPhoto'),
                 style: TextStyle(color: p.muted, letterSpacing: 1.2),
               ),
               const SizedBox(height: 10),
@@ -196,7 +207,11 @@ class LookScreen extends StatelessWidget {
                   backgroundColor: p.accent,
                   foregroundColor: p.onAccent,
                 ),
-                child: Text(hasPhoto ? 'Change photo' : 'Use a photo (dog, walk, anything)'),
+                child: Text(
+                  hasPhoto
+                      ? uiLine(lang, 'changePhoto')
+                      : uiLine(lang, 'usePhoto'),
+                ),
               ),
               if (hasPhoto)
                 TextButton(
@@ -209,16 +224,16 @@ class LookScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  child: Text('Crop photo', style: TextStyle(color: p.accent)),
+                  child: Text(uiLine(lang, 'cropPhoto'), style: TextStyle(color: p.accent)),
                 ),
               if (hasPhoto)
                 TextButton(
                   onPressed: look.clearPhoto,
-                  child: Text('Remove photo', style: TextStyle(color: p.muted)),
+                  child: Text(uiLine(lang, 'removePhoto'), style: TextStyle(color: p.muted)),
                 ),
               const SizedBox(height: 18),
               Text(
-                'Type size',
+                uiLine(lang, 'typeSize'),
                 style: TextStyle(color: p.muted, letterSpacing: 1.2),
               ),
               Slider(
@@ -238,9 +253,7 @@ class LookScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  'Tap a colour circle to pick any colour. '
-                  'Accent is the ring and buttons. Background is the page when there is no photo. '
-                  'A photo sits behind the numbers — crop it so the part you want fills the screen.',
+                  uiLine(lang, 'lookHint'),
                   style: TextStyle(color: p.muted, height: 1.45, fontSize: 13.5),
                 ),
               ),
@@ -253,6 +266,7 @@ class LookScreen extends StatelessWidget {
 
   Widget _colourCircle({
     required String label,
+    required String hint,
     required Color color,
     required Color ink,
     required Color muted,
@@ -287,7 +301,7 @@ class LookScreen extends StatelessWidget {
               style: TextStyle(color: ink, fontWeight: FontWeight.w600),
             ),
             Text(
-              'Tap to pick',
+              hint,
               style: TextStyle(color: muted, fontSize: 12),
             ),
           ],

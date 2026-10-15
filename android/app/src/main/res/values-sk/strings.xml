@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Quiet Steps</string>
     <string name="widget_small_label">Quiet Steps</string>
     <string name="widget_small_description">Dnešné kroky a ukazovateľ cieľa</string>
     <string name="widget_medium_label">Quiet Steps</string>
     <string name="widget_medium_description">Dnešné kroky, séria a stav</string>
+    <string name="fg_channel_name">Quiet Steps</string>
+    <string name="fg_channel_desc">Počítanie krokov v tomto telefóne. Nič sa neodosiela.</string>
+    <string name="milestone_channel_name">Správy pri míľnikoch</string>
+    <string name="milestone_channel_desc">Jemné správy, keď dosiahnete míľnik chôdze.</string>
+    <string name="reflection_channel_name">Večerné zamyslenie</string>
+    <string name="reflection_channel_desc">Jemný súhrn dňa.</string>
 </resources>

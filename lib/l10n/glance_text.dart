@@ -1,6 +1,8 @@
 /// Home-screen widget copy. Unknown language falls back to English.
 library;
 
+import 'package:intl/intl.dart';
+
 const glanceStatusGoal = {
   'en': 'Goal reached',
   'sk': 'Cieľ splnený',
@@ -99,7 +101,7 @@ String glanceStepsToGoLine(String language, int remaining) {
   final forms = glanceStepsToGo[lang] ?? glanceStepsToGo['en']!;
   final key = _plural(lang, remaining);
   final template = forms[key] ?? forms['other'] ?? glanceStepsToGo['en']!['other']!;
-  return template.replaceAll('{n}', _fmt(remaining));
+  return template.replaceAll('{n}', glanceFormatNumber(remaining, language));
 }
 
 String glanceLang(String language) => _lang(language);
@@ -129,11 +131,10 @@ String _plural(String lang, int n) {
   }
 }
 
-String _fmt(int n) {
-  return n.toString().replaceAllMapped(
-    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-    (m) => '${m[1]},',
-  );
+String glanceFormatNumber(int n, [String language = 'en']) {
+  try {
+    return NumberFormat.decimalPattern(language).format(n);
+  } catch (_) {
+    return NumberFormat.decimalPattern('en').format(n);
+  }
 }
-
-String glanceFormatNumber(int n) => _fmt(n);

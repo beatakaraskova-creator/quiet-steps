@@ -37,6 +37,7 @@ class Store {
   static const _kQuietStart = 'quiet_start';
   static const _kQuietEnd = 'quiet_end';
   static const _kLanguage = 'language';
+  static const _kLanguagePicked = 'language_picked';
   static const _kFiredMilestones = 'fired_milestones';
   static const _kEveningReflection = 'evening_reflection';
   static const _kReflectionTime = 'reflection_time';
@@ -136,6 +137,9 @@ class Store {
 
   String get language => _p.getString(_kLanguage) ?? 'auto';
   set language(String v) => _p.setString(_kLanguage, v);
+
+  bool get languagePicked => _p.getBool(_kLanguagePicked) ?? false;
+  set languagePicked(bool v) => _p.setBool(_kLanguagePicked, v);
 
   String get firedMilestonesRaw => _p.getString(_kFiredMilestones) ?? '';
   set firedMilestonesRaw(String v) => _p.setString(_kFiredMilestones, v);

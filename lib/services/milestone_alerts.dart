@@ -1,7 +1,10 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import '../l10n/ui_text.dart';
 import 'milestones.dart';
 import 'reflection_alerts.dart';
 import 'step_math.dart';
@@ -14,14 +17,22 @@ class MilestoneAlerts {
   static final MilestoneAlerts instance = MilestoneAlerts._();
 
   static const _channelId = 'quiet_steps_milestones';
-  static const _channelName = 'Milestone messages';
-  static const _channelDesc =
-      'Gentle messages when you reach a walking milestone.';
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   FlutterTts? _tts;
   bool _inited = false;
+
+  String _copyLang() {
+    try {
+      return resolveLanguage(
+        stored: Store.instance.language,
+        deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
+      );
+    } catch (_) {
+      return 'en';
+    }
+  }
 
   Future<void> init() async {
     if (_inited) return;
@@ -35,10 +46,11 @@ class MilestoneAlerts {
           }
         },
       );
-      const channel = AndroidNotificationChannel(
+      final lang = _copyLang();
+      final channel = AndroidNotificationChannel(
         _channelId,
-        _channelName,
-        description: _channelDesc,
+        uiLine(lang, 'milestoneChannel'),
+        description: uiLine(lang, 'milestoneChannelDesc'),
         importance: Importance.low,
         playSound: false,
         showBadge: false,
@@ -106,13 +118,13 @@ class MilestoneAlerts {
       final id = key == 'goal' ? 8001 : int.tryParse(key) ?? 8000;
       await _plugin.show(
         id,
-        'Quiet Steps',
+        uiLine(_copyLang(), 'appName'),
         line,
         NotificationDetails(
           android: AndroidNotificationDetails(
             _channelId,
-            _channelName,
-            channelDescription: _channelDesc,
+            uiLine(_copyLang(), 'milestoneChannel'),
+            channelDescription: uiLine(_copyLang(), 'milestoneChannelDesc'),
             importance: Importance.low,
             priority: Priority.low,
             playSound: !silent,

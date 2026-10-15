@@ -149,10 +149,11 @@ class PostcardFace extends StatelessWidget {
   }
 
   String _fmt(int n) {
-    return n.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
+    try {
+      return NumberFormat.decimalPattern(language).format(n);
+    } catch (_) {
+      return NumberFormat.decimalPattern('en').format(n);
+    }
   }
 }
 

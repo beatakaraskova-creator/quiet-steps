@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Quiet Steps</string>
     <string name="widget_small_label">Quiet Steps</string>
     <string name="widget_small_description">Heutige Schritte und Fortschritt</string>
     <string name="widget_medium_label">Quiet Steps</string>
     <string name="widget_medium_description">Heutige Schritte, Serie und Status</string>
+    <string name="fg_channel_name">Quiet Steps</string>
+    <string name="fg_channel_desc">Schrittzählen auf diesem Telefon. Es wird nichts gesendet.</string>
+    <string name="milestone_channel_name">Meilenstein-Nachrichten</string>
+    <string name="milestone_channel_desc">Sanfte Nachrichten, wenn Sie einen Meilenstein erreichen.</string>
+    <string name="reflection_channel_name">Abendliche Rückschau</string>
+    <string name="reflection_channel_desc">Eine sanfte Zusammenfassung des Tages.</string>
 </resources>

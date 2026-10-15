@@ -5,6 +5,8 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../l10n/ui_text.dart';
+import 'app_locale.dart';
 import 'glance.dart';
 import 'milestone_alerts.dart';
 import 'step_math.dart';
@@ -16,8 +18,14 @@ class StepEngine extends ChangeNotifier {
   static final StepEngine instance = StepEngine._();
 
   StreamSubscription<StepCount>? _fgSub;
-  String? error;
+  String? errorKey;
   bool permissionDenied = false;
+
+  String? get error {
+    final key = errorKey;
+    if (key == null) return null;
+    return uiLine(currentLanguage(), key);
+  }
   bool ready = false;
   bool _serviceOwnsWrites = false;
   bool _listeningTaskData = false;
@@ -27,6 +35,7 @@ class StepEngine extends ChangeNotifier {
 
   Future<void> init() async {
     await Store.instance.init();
+    AppLocale.instance.load();
     FlutterForegroundTask.initCommunicationPort();
     if (!_listeningTaskData) {
       FlutterForegroundTask.addTaskDataCallback(_onTaskData);
@@ -35,8 +44,8 @@ class StepEngine extends ChangeNotifier {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'quiet_steps',
-        channelName: 'Quiet Steps',
-        channelDescription: 'Step counting on this phone. Nothing is sent.',
+        channelName: uiLine(currentLanguage(), 'fgChannelName'),
+        channelDescription: uiLine(currentLanguage(), 'fgChannelDesc'),
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
         onlyAlertOnce: true,
@@ -82,7 +91,7 @@ class StepEngine extends ChangeNotifier {
     permissionDenied = false;
     // Notification is optional-ish but needed for the background bar.
     if (notif.isPermanentlyDenied) {
-      error = 'Allow notifications so counting can stay on in the pocket.';
+      errorKey = 'needNotifications';
     }
     notifyListeners();
     return true;
@@ -108,17 +117,16 @@ class StepEngine extends ChangeNotifier {
             steps,
           );
           scheduleQuietStepsWidgetPush();
-          error = null;
+          errorKey = null;
           notifyListeners();
         },
         onError: (e) {
-          error =
-              'This phone did not give a step sensor. Some models need a short walk first.';
+          errorKey = 'noSensorWalk';
           notifyListeners();
         },
       );
     } catch (e) {
-      error = 'Step sensor is not available on this device.';
+      errorKey = 'noSensor';
       notifyListeners();
     }
   }
@@ -127,8 +135,7 @@ class StepEngine extends ChangeNotifier {
     final ok = await requestPermission();
     if (!ok) {
       _serviceOwnsWrites = false;
-      error =
-          'Physical activity permission is needed so the phone can count steps.';
+      errorKey = 'needActivity';
       _listenForeground();
       notifyListeners();
       return;
@@ -147,15 +154,14 @@ class StepEngine extends ChangeNotifier {
     _serviceOwnsWrites = true;
     final result = await FlutterForegroundTask.startService(
       serviceId: 3101,
-      notificationTitle: 'Quiet Steps',
-      notificationText: 'Counting steps on this phone only',
+      notificationTitle: uiLine(currentLanguage(), 'appName'),
+      notificationText: uiLine(currentLanguage(), 'fgCounting'),
       callback: stepTaskCallback,
       serviceTypes: [ForegroundServiceTypes.health],
     );
     if (result is ServiceRequestFailure) {
       _serviceOwnsWrites = false;
-      error =
-          'Background counting did not start. Counting on this screen instead.';
+      errorKey = 'bgFailed';
       _listenForeground();
       notifyListeners();
       return;

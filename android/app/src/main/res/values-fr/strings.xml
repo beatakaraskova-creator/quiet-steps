@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Quiet Steps</string>
     <string name="widget_small_label">Quiet Steps</string>
     <string name="widget_small_description">Pas du jour et barre de progression</string>
     <string name="widget_medium_label">Quiet Steps</string>
     <string name="widget_medium_description">Pas du jour, série et statut</string>
+    <string name="fg_channel_name">Quiet Steps</string>
+    <string name="fg_channel_desc">Comptage des pas sur ce téléphone. Rien n\'est envoyé.</string>
+    <string name="milestone_channel_name">Messages aux paliers</string>
+    <string name="milestone_channel_desc">Des messages doux lorsque vous atteignez un palier.</string>
+    <string name="reflection_channel_name">Regard du soir</string>
+    <string name="reflection_channel_desc">Un résumé doux de la journée.</string>
 </resources>

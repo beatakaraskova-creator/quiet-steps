@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../l10n/app_text.dart';
 import '../l10n/easy_text.dart';
+import '../l10n/ui_text.dart';
 import '../models/look_pack.dart';
+import '../services/app_locale.dart';
 import '../services/backup.dart';
+import '../services/easy_mode.dart';
 import '../services/glance.dart';
 import '../services/look.dart';
 import '../services/milestones.dart';
@@ -78,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final parsedGoal = int.tryParse(goal.text);
     if (parsedGoal != null && parsedGoal < 100) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppText.goalMustBe100)),
+        SnackBar(content: Text(uiLine(_lang, 'goalMustBe100'))),
       );
       return;
     }
@@ -98,6 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _writeMilestonePrefs() {
     final s = Store.instance;
     s.language = _language;
+    AppLocale.instance.load();
     s.milestoneMessages = _milestoneOn;
     s.speakMessages = _speakOn;
     s.voiceSpeed = _voiceSpeed;
@@ -418,20 +421,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final p = Look.instance.pack;
-    final lang = resolveLanguage(
-      stored: _language,
-      deviceLanguageCode: View.of(context).platformDispatcher.locale.languageCode,
-    );
+    final lang = currentLanguage();
     return Scaffold(
       backgroundColor: p.bg,
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(uiLine(lang, 'settings')),
         backgroundColor: p.bg,
         foregroundColor: p.ink,
         actions: [
           TextButton(
             onPressed: _save,
-            child: Text('Save', style: TextStyle(color: p.accent)),
+            child: Text(uiLine(lang, 'save'), style: TextStyle(color: p.accent)),
           ),
         ],
       ),
@@ -449,52 +449,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: easyUiLine(lang, 'hint'),
           ),
 
-          _field(AppText.goalLabel, goal, p),
-          _field('Height (cm)', height, p),
-          _field('Stride (cm)', stride, p),
-          _field('Weight (kg) — for kcal estimate only', weight, p),
+          _field(uiLine(lang, 'goalLabel'), goal, p),
+          _field(uiLine(lang, 'height'), height, p),
+          _field(uiLine(lang, 'stride'), stride, p),
+          _field(uiLine(lang, 'weight'), weight, p),
           const SizedBox(height: 12),
-          _languageTile(p),
+          _languageTile(lang, p),
           _switchTile(
-            AppText.milestoneMessages,
+            uiLine(lang, 'milestoneMessages'),
             _milestoneOn,
             (v) => _touchMilestone(() => _milestoneOn = v),
             p,
           ),
           _switchTile(
-            AppText.speakMessages,
+            uiLine(lang, 'speakMessages'),
             _speakOn,
             (v) => _touchMilestone(() => _speakOn = v),
             p,
           ),
           _choiceRow(
-            AppText.voiceSpeed,
-            const [
-              ('slow', AppText.voiceSlow),
-              ('normal', AppText.voiceNormal),
+            uiLine(lang, 'voiceSpeed'),
+            [
+              ('slow', uiLine(lang, 'voiceSlow')),
+              ('normal', uiLine(lang, 'voiceNormal')),
             ],
             _voiceSpeed,
             (v) => _touchMilestone(() => _voiceSpeed = v),
             p,
           ),
           _choiceRow(
-            AppText.style,
-            const [
-              ('calm', AppText.styleCalm),
-              ('cheerful', AppText.styleCheerful),
+            uiLine(lang, 'style'),
+            [
+              ('calm', uiLine(lang, 'styleCalm')),
+              ('cheerful', uiLine(lang, 'styleCheerful')),
             ],
             _style,
             (v) => _touchMilestone(() => _style = v),
             p,
           ),
           _switchTile(
-            AppText.quietHours,
+            uiLine(lang, 'quietHours'),
             _quietOn,
             (v) => _touchMilestone(() => _quietOn = v),
             p,
           ),
-          _timeTile(AppText.quietStart, _quietStart, () => _pickTime(start: true), p),
-          _timeTile(AppText.quietEnd, _quietEnd, () => _pickTime(start: false), p),
+          _timeTile(uiLine(lang, 'quietStart'), _quietStart, () => _pickTime(start: true), p),
+          _timeTile(uiLine(lang, 'quietEnd'), _quietEnd, () => _pickTime(start: false), p),
           _switchTile(
             reflectionUiLine(lang, 'setting'),
             _eveningOn,
@@ -517,9 +517,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
-              'Quiet Steps is not a medical device. It does not diagnose, treat, cure or prevent any condition.\n\n'
-              'Steps come from the phone sensor. Distance and calories are estimates from the numbers you type here.\n\n'
-              'Nothing is uploaded. There is no account. GPS is not used.',
+              uiLine(lang, 'medical'),
               style: TextStyle(color: p.muted, height: 1.45, fontSize: 13.5),
             ),
           ),
@@ -528,45 +526,106 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _languageTile(LookPack p) {
+  Widget _languageTile(String lang, LookPack p) {
+    final easy = Look.instance.bigSimple;
+    final current = languageOptions.contains(_language) ? _language : 'auto';
+    final currentLabel = current == 'auto'
+        ? uiLine(lang, 'languageAuto')
+        : (languageLabels[current] ?? current);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 6, 12, 6),
-        decoration: BoxDecoration(
-          color: p.card,
+      child: Material(
+        color: p.card,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          key: const ValueKey('settings-language'),
+          onTap: () => _pickLanguage(lang, p),
           borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                AppText.language,
-                style: TextStyle(color: p.ink, fontSize: 16),
-              ),
-            ),
-            DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: languageOptions.contains(_language) ? _language : 'auto',
-                dropdownColor: p.card,
-                style: TextStyle(color: p.ink, fontSize: 15),
-                items: [
-                  for (final code in languageOptions)
-                    DropdownMenuItem(
-                      value: code,
-                      child: Text(languageLabels[code] ?? code),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: easy ? easyTapMin : 52),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      uiLine(lang, 'language'),
+                      style: TextStyle(color: p.ink, fontSize: 16),
                     ),
+                  ),
+                  Text(
+                    currentLabel,
+                    style: TextStyle(color: p.accent, fontSize: 16),
+                  ),
                 ],
-                onChanged: (v) {
-                  if (v == null) return;
-                  _touchMilestone(() => _language = v);
-                },
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _pickLanguage(String lang, LookPack p) async {
+    final easy = Look.instance.bigSimple;
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: p.card,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
+                    child: Text(
+                      uiLine(lang, 'language'),
+                      style: TextStyle(
+                        color: p.ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  for (final code in languageOptions)
+                    ListTile(
+                      key: ValueKey('settings-lang-$code'),
+                      minVerticalPadding: easy ? 18 : 12,
+                      title: Text(
+                        code == 'auto'
+                            ? uiLine(lang, 'languageAuto')
+                            : (languageLabels[code] ?? code),
+                        style: TextStyle(
+                          color: p.ink,
+                          fontWeight: _language == code
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      ),
+                      trailing: Icon(
+                        _language == code
+                            ? Icons.check_circle
+                            : Icons.circle_outlined,
+                        color: _language == code ? p.accent : p.muted,
+                      ),
+                      onTap: () => Navigator.pop(ctx, code),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    if (picked == null) return;
+    _touchMilestone(() => _language = picked);
   }
 
   Widget _switchTile(
@@ -578,13 +637,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        decoration: BoxDecoration(
-          color: p.card,
-          borderRadius: BorderRadius.circular(12),
-        ),
+      child: Material(
+        color: p.card,
+        borderRadius: BorderRadius.circular(12),
         child: SwitchListTile(
-          title: Text(label, style: TextStyle(color: p.ink, fontSize: 16)),
+          title: Text(
+            label,
+            style: TextStyle(color: p.ink, fontSize: 16),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
           subtitle: subtitle == null
               ? null
               : Text(subtitle, style: TextStyle(color: p.muted, fontSize: 13)),
