@@ -2,6 +2,28 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../services/milestones.dart';
+
+double stepRingFirstLap(int steps, int goal) {
+  if (goal <= 0) return 0;
+  return (steps / goal).clamp(0.0, 1.0);
+}
+
+double stepRingExtraLap(int steps, int goal) {
+  if (goal <= 0) return 0;
+  return ((steps - goal) / goal).clamp(0.0, 1.0);
+}
+
+/// Beyond-goal marks that sit on the second lap, as fractions 0–1.
+List<double> stepRingExtraMarks(int goal) {
+  if (goal <= 0) return const [];
+  final top = goal * 2;
+  return [
+    for (final m in beyondGoalThresholds(goal, upTo: top))
+      if (m > goal && m <= top) (m - goal) / goal,
+  ];
+}
+
 class StepRing extends StatefulWidget {
   const StepRing({
     super.key,
@@ -40,15 +62,18 @@ class _StepRingState extends State<StepRing> with TickerProviderStateMixin {
   }
 
   double get _target {
-    final goal = widget.goal;
-    if (goal <= 0) return 0;
-    return (widget.steps / goal).clamp(0.0, 1.0);
+    return stepRingFirstLap(widget.steps, widget.goal) +
+        stepRingExtraLap(widget.steps, widget.goal);
   }
 
   @override
   void initState() {
     super.initState();
-    _fill = AnimationController(vsync: this, duration: const Duration(milliseconds: 850));
+    _fill = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 850),
+      upperBound: 2,
+    );
     _delight = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
   }
 
@@ -97,6 +122,12 @@ class _StepRingState extends State<StepRing> with TickerProviderStateMixin {
         return;
       }
     }
+    for (final m in beyondGoalThresholds(goal, upTo: to)) {
+      if (from < m && to >= m) {
+        _startPulse();
+        return;
+      }
+    }
   }
 
   Future<void> _startPulse() async {
@@ -137,11 +168,13 @@ class _StepRingState extends State<StepRing> with TickerProviderStateMixin {
               : math.sin(_delight.value * math.pi);
           return CustomPaint(
             painter: _RingPainter(
-              t: _fill.value.clamp(0.0, 1.0),
+              t: _fill.value.clamp(0.0, 2.0),
               track: widget.track,
               accent: widget.accent,
               strokeWidth: widget.strokeWidth,
               glow: glow.clamp(0.0, 1.0),
+              extraMarks: stepRingExtraMarks(widget.goal),
+              showExtraMarks: widget.goal > 0 && widget.steps >= widget.goal,
             ),
             foregroundPainter: _celebrating
                 ? _ParticlesPainter(
@@ -166,6 +199,8 @@ class _RingPainter extends CustomPainter {
     required this.accent,
     required this.strokeWidth,
     required this.glow,
+    required this.extraMarks,
+    required this.showExtraMarks,
   });
 
   final double t;
@@ -173,11 +208,16 @@ class _RingPainter extends CustomPainter {
   final Color accent;
   final double strokeWidth;
   final double glow;
+  final List<double> extraMarks;
+  final bool showExtraMarks;
 
   @override
   void paint(Canvas canvas, Size size) {
     final c = Offset(size.width / 2, size.height / 2);
     final r = size.width / 2 - strokeWidth;
+    final t1 = t.clamp(0.0, 1.0);
+    final t2 = (t - 1.0).clamp(0.0, 1.0);
+    final rect = Rect.fromCircle(center: c, radius: r);
     final bg = Paint()
       ..color = track
       ..style = PaintingStyle.stroke
@@ -188,32 +228,50 @@ class _RingPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
+    final soft = Paint()
+      ..color = Color.lerp(accent, Colors.white, 0.38)!
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
 
     canvas.drawCircle(c, r, bg);
 
-    if (glow > 0.01) {
+    final sweep = (t2 > 0.001 ? t2 : t1) * math.pi * 2;
+    final glowColor = t2 > 0.001 ? soft.color : accent;
+    if (glow > 0.01 && sweep > 0) {
       final g = Paint()
-        ..color = accent.withValues(alpha: 0.28 * glow)
+        ..color = glowColor.withValues(alpha: 0.28 * glow)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth + 14 * glow
         ..strokeCap = StrokeCap.round
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, 6 + 10 * glow);
-      canvas.drawArc(
-        Rect.fromCircle(center: c, radius: r),
-        -math.pi / 2,
-        t * math.pi * 2,
-        false,
-        g,
-      );
+      canvas.drawArc(rect, -math.pi / 2, sweep, false, g);
     }
 
-    canvas.drawArc(
-      Rect.fromCircle(center: c, radius: r),
-      -math.pi / 2,
-      t * math.pi * 2,
-      false,
-      fg,
-    );
+    if (t1 > 0.001) {
+      canvas.drawArc(rect, -math.pi / 2, t1 * math.pi * 2, false, fg);
+    }
+    if (t2 > 0.001) {
+      canvas.drawArc(rect, -math.pi / 2, t2 * math.pi * 2, false, soft);
+    }
+
+    if (showExtraMarks) {
+      for (final m in extraMarks) {
+        _drawMark(canvas, c, r, m.clamp(0.0, 1.0), t2 >= m - 0.001);
+      }
+    }
+  }
+
+  void _drawMark(Canvas canvas, Offset c, double r, double frac, bool reached) {
+    final angle = -math.pi / 2 + frac * math.pi * 2;
+    final dir = Offset(math.cos(angle), math.sin(angle));
+    final inner = c + dir * (r - strokeWidth * 0.85);
+    final outer = c + dir * (r + strokeWidth * 0.85);
+    final paint = Paint()
+      ..color = reached ? accent : accent.withValues(alpha: 0.45)
+      ..strokeWidth = 2.4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(inner, outer, paint);
   }
 
   @override
@@ -222,7 +280,9 @@ class _RingPainter extends CustomPainter {
       old.track != track ||
       old.accent != accent ||
       old.strokeWidth != strokeWidth ||
-      old.glow != glow;
+      old.glow != glow ||
+      old.showExtraMarks != showExtraMarks ||
+      old.extraMarks.length != extraMarks.length;
 }
 
 class _ParticlesPainter extends CustomPainter {

@@ -31,8 +31,9 @@ List<SpokenLine> spokenLinesFor(String language) {
   final lang = milestoneLines.containsKey(language) ? language : 'en';
   final out = <SpokenLine>[];
   for (final style in const ['calm', 'cheerful']) {
-    for (final ms in const ['2500', '5000', '7500', 'goal']) {
-      final lines = milestoneLines[lang]![style]![ms]!;
+    final byMs = milestoneLines[lang]![style]!;
+    for (final ms in byMs.keys) {
+      final lines = byMs[ms]!;
       for (var i = 0; i < lines.length; i++) {
         out.add(SpokenLine('milestone_${style}_${ms}_$i', lines[i]));
       }

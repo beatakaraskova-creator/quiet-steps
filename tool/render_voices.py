@@ -211,8 +211,8 @@ def spoken_catalog() -> dict[str, list[tuple[str, str]]]:
         lines: list[tuple[str, str]] = []
         ms = milestones[lang]
         for style in ("calm", "cheerful"):
-            for key in ("2500", "5000", "7500", "goal"):
-                for i, text in enumerate(ms[style][key]):
+            for key, texts in ms[style].items():
+                for i, text in enumerate(texts):
                     lines.append((f"milestone_{style}_{key}_{i}", text))
         wl = walks[lang]
         for mood in ("clear", "gratitude", "move", "slow", "energy"):

@@ -120,6 +120,15 @@ void main() {
     );
   });
 
+  test('spoken catalog includes beyond-goal milestone lines', () {
+    final ids = spokenLinesFor('en').map((l) => l.id).toSet();
+    expect(ids, contains('milestone_calm_beyond_0'));
+    expect(ids, contains('milestone_cheerful_round_10000_0'));
+    expect(ids, contains('milestone_calm_round_20000_2'));
+    expect(ids, contains('milestone_calm_care_30k_0'));
+    expect(spokenLinesFor('sk').length, spokenLinesFor('en').length);
+  });
+
   test('every spoken line has a clip for every language and voice', () {
     final missing = <String>[];
     for (final lang in supportedLanguages) {

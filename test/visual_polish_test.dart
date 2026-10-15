@@ -193,6 +193,17 @@ void main() {
       expect(tester.hasRunningAnimations, isFalse);
     });
 
+    test('second lap and extra marks after the goal', () {
+      expect(stepRingFirstLap(4000, 8000), 0.5);
+      expect(stepRingExtraLap(4000, 8000), 0);
+      expect(stepRingFirstLap(8000, 8000), 1);
+      expect(stepRingExtraLap(8000, 8000), 0);
+      expect(stepRingFirstLap(12000, 8000), 1);
+      expect(stepRingExtraLap(12000, 8000), 0.5);
+      expect(stepRingExtraLap(20000, 8000), 1);
+      expect(stepRingExtraMarks(8000), [0.25, 0.625, 0.875]);
+    });
+
     testWidgets('skips fill, pulse and celebration when animations are off', (
       tester,
     ) async {

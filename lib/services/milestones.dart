@@ -41,6 +41,79 @@ const ttsLocales = {
 
 const milestoneThresholds = [2500, 5000, 7500];
 
+/// Round-number celebrations after the goal. They replace a nearby regular tick.
+const roundNumberSpecials = [10000, 15000, 20000, 25000, 30000];
+
+/// No two beyond-goal messages within this many steps (inclusive).
+const beyondGoalMinGap = 1000;
+
+const _beyondUntil = 20000;
+const _beyondThenEvery = 5000;
+const _beyondThenFrom = 25000;
+
+/// Catalog key for a fired milestone id (`2500`, `goal`, `10000`, `35000`, …).
+String milestoneLineBucket(String milestone) {
+  switch (milestone) {
+    case '2500':
+    case '5000':
+    case '7500':
+    case 'goal':
+    case 'beyond':
+    case 'round_10000':
+    case 'round_15000':
+    case 'round_20000':
+    case 'round_25000':
+    case 'round_30000':
+    case 'care_30k':
+      return milestone;
+  }
+  final n = int.tryParse(milestone);
+  if (n == null) return milestone;
+  if (n == 10000) return 'round_10000';
+  if (n == 15000) return 'round_15000';
+  if (n == 20000) return 'round_20000';
+  if (n == 25000) return 'round_25000';
+  if (n == 30000) return 'round_30000';
+  if (n >= 30000) return 'care_30k';
+  if (n >= 20000) return 'round_20000';
+  return 'beyond';
+}
+
+bool _withinGap(int a, int b) => (a - b).abs() <= beyondGoalMinGap;
+
+/// Step counts after the goal that earn a message.
+///
+/// Every 2,500 above [goal] while that tick is at most 20,000, then every
+/// 5,000 from 25,000. Round numbers 10k–30k replace a regular tick when they
+/// fall within [beyondGoalMinGap] steps. Ticks within that gap of the goal
+/// are dropped so the goal line stands alone.
+List<int> beyondGoalThresholds(int goal, {int upTo = 100000}) {
+  if (goal <= 0) return const [];
+  final cap = upTo < goal ? goal : upTo;
+
+  final regular = <int>[];
+  for (var n = goal + 2500; n <= _beyondUntil && n <= cap; n += 2500) {
+    regular.add(n);
+  }
+  for (var n = _beyondThenFrom; n <= cap; n += _beyondThenEvery) {
+    if (n > goal) regular.add(n);
+  }
+
+  final specials = [
+    for (final s in roundNumberSpecials)
+      if (s > goal && s <= cap && !_withinGap(s, goal)) s,
+  ];
+
+  final kept = <int>[...specials];
+  for (final r in regular) {
+    if (_withinGap(r, goal)) continue;
+    if (specials.any((s) => _withinGap(s, r))) continue;
+    kept.add(r);
+  }
+  kept.sort();
+  return kept;
+}
+
 /// Resolve a stored language setting to a supported code.
 /// Unknown phone languages fall back to English.
 String resolveLanguage({
@@ -66,10 +139,11 @@ String pickMilestoneLine({
   final langKey = milestoneLines.containsKey(language) ? language : 'en';
   final langMap = milestoneLines[langKey] ?? milestoneLines['en']!;
   final styleKey = langMap.containsKey(style) ? style : 'calm';
-  var lines = langMap[styleKey]?[milestone];
+  final bucket = milestoneLineBucket(milestone);
+  var lines = langMap[styleKey]?[bucket];
   if (lines == null || lines.isEmpty) {
-    lines = milestoneLines['en']?[styleKey]?[milestone] ??
-        milestoneLines['en']?['calm']?[milestone];
+    lines = milestoneLines['en']?[styleKey]?[bucket] ??
+        milestoneLines['en']?['calm']?[bucket];
   }
   if (lines == null || lines.isEmpty) return '';
   final pick = nextInt ?? Random().nextInt;
@@ -101,6 +175,14 @@ List<String> newlyCrossedMilestones({
       currentSteps >= goal &&
       !alreadyFired.contains('goal')) {
     out.add('goal');
+  }
+  for (final m in beyondGoalThresholds(goal, upTo: currentSteps)) {
+    final key = '$m';
+    if (previousSteps < m &&
+        currentSteps >= m &&
+        !alreadyFired.contains(key)) {
+      out.add(key);
+    }
   }
   return out;
 }

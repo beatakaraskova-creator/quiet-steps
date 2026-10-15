@@ -70,7 +70,7 @@ void main() {
           goal: 3000,
           alreadyFired: {},
         ),
-        ['2500', 'goal'],
+        ['2500', 'goal', '5500'],
       );
 
       expect(
@@ -113,6 +113,129 @@ void main() {
           alreadyFired: {},
         ),
         ['2500', 'goal'],
+      );
+    });
+  });
+
+  group('beyond the goal', () {
+    test('schedule for common goals', () {
+      expect(
+        beyondGoalThresholds(6000, upTo: 30000),
+        [8500, 10000, 13500, 15000, 18500, 20000, 25000, 30000],
+      );
+      expect(
+        beyondGoalThresholds(8000, upTo: 30000),
+        [10000, 13000, 15000, 18000, 20000, 25000, 30000],
+      );
+      expect(
+        beyondGoalThresholds(10000, upTo: 30000),
+        [12500, 15000, 17500, 20000, 25000, 30000],
+      );
+      expect(
+        beyondGoalThresholds(15000, upTo: 30000),
+        [17500, 20000, 25000, 30000],
+      );
+    });
+
+    test('round numbers replace a regular tick within 1,000 steps', () {
+      expect(beyondGoalThresholds(8000, upTo: 20000), isNot(contains(10500)));
+      expect(beyondGoalThresholds(8000, upTo: 20000), contains(10000));
+      expect(beyondGoalThresholds(8000, upTo: 20000), isNot(contains(15500)));
+      expect(beyondGoalThresholds(8000, upTo: 20000), contains(15000));
+      expect(
+        pickMilestoneLine(
+          language: 'en',
+          style: 'calm',
+          milestone: '10000',
+          nextInt: (_) => 0,
+        ),
+        milestoneLines['en']!['calm']!['round_10000']!.first,
+      );
+      expect(
+        pickMilestoneLine(
+          language: 'en',
+          style: 'cheerful',
+          milestone: '30000',
+          nextInt: (_) => 0,
+        ),
+        milestoneLines['en']!['cheerful']!['round_30000']!.first,
+      );
+      expect(
+        pickMilestoneLine(
+          language: 'en',
+          style: 'calm',
+          milestone: '13000',
+          nextInt: (_) => 0,
+        ),
+        milestoneLines['en']!['calm']!['beyond']!.first,
+      );
+      expect(
+        pickMilestoneLine(
+          language: 'en',
+          style: 'calm',
+          milestone: '35000',
+          nextInt: (_) => 0,
+        ),
+        milestoneLines['en']!['calm']!['care_30k']!.first,
+      );
+    });
+
+    test('no duplicates or messages within 1,000 steps after the goal', () {
+      for (final goal in [3000, 6000, 8000, 9200, 10000, 15000, 19000]) {
+        final beyond = beyondGoalThresholds(goal, upTo: 40000);
+        expect(beyond.toSet().length, beyond.length, reason: 'goal $goal');
+        for (final n in beyond) {
+          expect(n - goal, greaterThan(beyondGoalMinGap), reason: 'goal $goal tick $n');
+        }
+        for (var i = 1; i < beyond.length; i++) {
+          expect(
+            beyond[i] - beyond[i - 1],
+            greaterThan(beyondGoalMinGap),
+            reason: 'goal $goal ${beyond[i - 1]} then ${beyond[i]}',
+          );
+        }
+        for (final special in roundNumberSpecials) {
+          if (special > goal && (special - goal) > beyondGoalMinGap) {
+            expect(beyond, contains(special), reason: 'goal $goal missing $special');
+          }
+        }
+      }
+    });
+
+    test('fires a beyond-goal tick once, including round specials', () {
+      var fired = <String>{'2500', '5000', '7500', 'goal'};
+      final ten = newlyCrossedMilestones(
+        previousSteps: 9999,
+        currentSteps: 10000,
+        goal: 8000,
+        alreadyFired: fired,
+      );
+      expect(ten, ['10000']);
+      fired.addAll(ten);
+
+      expect(
+        newlyCrossedMilestones(
+          previousSteps: 10499,
+          currentSteps: 10500,
+          goal: 8000,
+          alreadyFired: fired,
+        ),
+        isEmpty,
+      );
+
+      final next = newlyCrossedMilestones(
+        previousSteps: 12999,
+        currentSteps: 13000,
+        goal: 8000,
+        alreadyFired: fired,
+      );
+      expect(next, ['13000']);
+    });
+
+    test('high counts keep a 5,000 step cadence after 20,000', () {
+      expect(
+        beyondGoalThresholds(8000, upTo: 40000).where((n) => n > 20000),
+        [25000, 30000, 35000, 40000],
       );
     });
   });
