@@ -20,6 +20,8 @@ import '../services/reflection.dart';
 import '../services/reflection_alerts.dart';
 import '../services/step_engine.dart';
 import '../services/store.dart';
+import '../services/voice.dart';
+import 'credits_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -38,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _milestoneOn;
   late bool _speakOn;
   late String _voiceSpeed;
+  late String _voiceKind;
   late String _style;
   late bool _quietOn;
   late String _quietStart;
@@ -58,6 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _milestoneOn = s.milestoneMessages;
     _speakOn = s.speakMessages;
     _voiceSpeed = s.voiceSpeed;
+    _voiceKind = s.voiceKind;
     _style = s.milestoneStyle;
     _quietOn = s.quietHours;
     _quietStart = s.quietStart;
@@ -104,6 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     s.milestoneMessages = _milestoneOn;
     s.speakMessages = _speakOn;
     s.voiceSpeed = _voiceSpeed;
+    s.voiceKind = _voiceKind;
     s.milestoneStyle = _style;
     s.quietHours = _quietOn;
     s.quietStart = _quietStart;
@@ -363,6 +368,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _milestoneOn = s.milestoneMessages;
     _speakOn = s.speakMessages;
     _voiceSpeed = s.voiceSpeed;
+    _voiceKind = s.voiceKind;
     _style = s.milestoneStyle;
     _quietOn = s.quietHours;
     _quietStart = s.quietStart;
@@ -392,25 +398,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: _busy ? null : _exportMenu,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: p.ink,
-              side: BorderSide(color: p.line),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
+            style: secondaryOutlineStyle(p),
             child: Text(backupUiLine(lang, 'export')),
           ),
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: _busy ? null : _import,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: p.ink,
-              side: BorderSide(color: p.line),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
+            style: secondaryOutlineStyle(p),
             child: Text(backupUiLine(lang, 'import')),
           ),
         ],
@@ -469,6 +463,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             (v) => _touchMilestone(() => _speakOn = v),
             p,
           ),
+          _voiceSection(lang, p),
           _choiceRow(
             uiLine(lang, 'voiceSpeed'),
             [
@@ -514,6 +509,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           _backupSection(lang, p),
           const SizedBox(height: 20),
+          _aboutTile(lang, p),
+          const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -526,6 +523,83 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _voiceSection(String lang, LookPack p) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: p.card,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(uiLine(lang, 'voice'), style: TextStyle(color: p.ink, fontSize: 16)),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final opt in [
+                  ('female', uiLine(lang, 'voiceFemale')),
+                  ('male', uiLine(lang, 'voiceMale')),
+                  ('phone', uiLine(lang, 'voicePhone')),
+                ])
+                  ChoiceChip(
+                    key: ValueKey('voice-kind-${opt.$1}'),
+                    label: Text(opt.$2),
+                    selected: _voiceKind == opt.$1,
+                    onSelected: (_) => _touchMilestone(() => _voiceKind = opt.$1),
+                    selectedColor: p.accent,
+                    backgroundColor: p.bg,
+                    labelStyle: TextStyle(
+                      color: _voiceKind == opt.$1 ? p.bg : p.ink,
+                    ),
+                    side: BorderSide.none,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton(
+              key: const ValueKey('voice-play-sample'),
+              onPressed: () {
+                Voice.instance.playSample(
+                  language: lang,
+                  voiceKind: _voiceKind,
+                  speed: _voiceSpeed,
+                );
+              },
+              style: secondaryOutlineStyle(p, padding: const EdgeInsets.symmetric(vertical: 12)),
+              child: Text(uiLine(lang, 'voicePlaySample')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _aboutTile(String lang, LookPack p) {
+    return Material(
+      color: p.card,
+      borderRadius: BorderRadius.circular(12),
+      child: ListTile(
+        key: const ValueKey('settings-about'),
+        title: Text(
+          uiLine(lang, 'aboutTitle'),
+          style: TextStyle(color: p.ink, fontSize: 16),
+        ),
+        trailing: Icon(Icons.chevron_right, color: p.muted),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const CreditsScreen()),
+          );
+        },
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

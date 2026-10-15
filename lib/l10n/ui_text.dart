@@ -32,6 +32,31 @@ const ui = {
     'voiceSpeed': 'Voice speed',
     'voiceSlow': 'Slow',
     'voiceNormal': 'Normal',
+    'voice': 'Voice',
+    'voiceFemale': 'Female',
+    'voiceMale': 'Male',
+    'voicePhone': "Phone's voice",
+    'voicePlaySample': 'Play sample',
+    'aboutTitle': 'About & credits',
+    'aboutIntro':
+        'Quiet Steps includes pre-recorded voices so it can speak without the internet. Piper voices are by rhasspy.',
+    'aboutVoices':
+        'English female — cori, public domain\n'
+            'English male — norman, public domain\n'
+            'Slovak female — lili, CC0\n'
+            'Slovak male — jirka (Czech, reads Slovak), CC0\n'
+            'Czech female — kasandra, CC BY 4.0\n'
+            'Czech male — jirka, CC0\n'
+            'Polish female — gosia, CC0\n'
+            'Polish male — darkman, CC0\n'
+            'German female — ramona, BSD-style\n'
+            'German male — thorsten, CC0\n'
+            'Spanish female — sharvard (speaker F), CC BY 3.0\n'
+            'Spanish male — davefx, CC0\n'
+            'French female — siwis, CC BY 4.0\n'
+            'French male — upmc (pierre), CC BY-SA 4.0\n'
+            'Italian female — paola, CC0\n'
+            'Italian male — riccardo, BSD-style',
     'style': 'Style',
     'styleCalm': 'Calm',
     'styleCheerful': 'Cheerful',
@@ -135,6 +160,31 @@ const ui = {
     'voiceSpeed': 'Rýchlosť hlasu',
     'voiceSlow': 'Pomaly',
     'voiceNormal': 'Normálne',
+    'voice': 'Hlas',
+    'voiceFemale': 'Ženský',
+    'voiceMale': 'Mužský',
+    'voicePhone': 'Hlas telefónu',
+    'voicePlaySample': 'Prehrať ukážku',
+    'aboutTitle': 'O aplikácii a poďakovania',
+    'aboutIntro':
+        'Quiet Steps obsahuje vopred nahraté hlasy, aby mohol hovoriť bez internetu. Hlasy Piper sú od rhasspy.',
+    'aboutVoices':
+        'Angličtina, ženský — cori, public domain\n'
+            'Angličtina, mužský — norman, public domain\n'
+            'Slovenčina, ženský — lili, CC0\n'
+            'Slovenčina, mužský — jirka (český, číta slovensky), CC0\n'
+            'Čeština, ženský — kasandra, CC BY 4.0\n'
+            'Čeština, mužský — jirka, CC0\n'
+            'Poľština, ženský — gosia, CC0\n'
+            'Poľština, mužský — darkman, CC0\n'
+            'Nemčina, ženský — ramona, BSD-style\n'
+            'Nemčina, mužský — thorsten, CC0\n'
+            'Španielčina, ženský — sharvard (speaker F), CC BY 3.0\n'
+            'Španielčina, mužský — davefx, CC0\n'
+            'Francúzština, ženský — siwis, CC BY 4.0\n'
+            'Francúzština, mužský — upmc (pierre), CC BY-SA 4.0\n'
+            'Taliančina, ženský — paola, CC0\n'
+            'Taliančina, mužský — riccardo, BSD-style',
     'style': 'Štýl',
     'styleCalm': 'Pokojný',
     'styleCheerful': 'Oživenejší',
@@ -237,6 +287,31 @@ const ui = {
     'voiceSpeed': 'Rychlost hlasu',
     'voiceSlow': 'Pomalu',
     'voiceNormal': 'Normálně',
+    'voice': 'Hlas',
+    'voiceFemale': 'Ženský',
+    'voiceMale': 'Mužský',
+    'voicePhone': 'Hlas telefonu',
+    'voicePlaySample': 'Přehrát ukázku',
+    'aboutTitle': 'O aplikaci a poděkování',
+    'aboutIntro':
+        'Quiet Steps obsahuje předem nahrané hlasy, aby mohl mluvit bez internetu. Hlasy Piper jsou od rhasspy.',
+    'aboutVoices':
+        'Angličtina, ženský — cori, public domain\n'
+            'Angličtina, mužský — norman, public domain\n'
+            'Slovenština, ženský — lili, CC0\n'
+            'Slovenština, mužský — jirka (český, čte slovensky), CC0\n'
+            'Čeština, ženský — kasandra, CC BY 4.0\n'
+            'Čeština, mužský — jirka, CC0\n'
+            'Polština, ženský — gosia, CC0\n'
+            'Polština, mužský — darkman, CC0\n'
+            'Němčina, ženský — ramona, BSD-style\n'
+            'Němčina, mužský — thorsten, CC0\n'
+            'Španělština, ženský — sharvard (speaker F), CC BY 3.0\n'
+            'Španělština, mužský — davefx, CC0\n'
+            'Francouzština, ženský — siwis, CC BY 4.0\n'
+            'Francouzština, mužský — upmc (pierre), CC BY-SA 4.0\n'
+            'Italština, ženský — paola, CC0\n'
+            'Italština, mužský — riccardo, BSD-style',
     'style': 'Styl',
     'styleCalm': 'Klidný',
     'styleCheerful': 'Veselejší',
@@ -339,6 +414,31 @@ const ui = {
     'voiceSpeed': 'Tempo głosu',
     'voiceSlow': 'Wolno',
     'voiceNormal': 'Normalnie',
+    'voice': 'Głos',
+    'voiceFemale': 'Żeński',
+    'voiceMale': 'Męski',
+    'voicePhone': 'Głos telefonu',
+    'voicePlaySample': 'Odtwórz próbkę',
+    'aboutTitle': 'O aplikacji i podziękowania',
+    'aboutIntro':
+        'Quiet Steps zawiera nagrane wcześniej głosy, żeby mówić bez internetu. Głosy Piper pochodzą od rhasspy.',
+    'aboutVoices':
+        'Angielski, żeński — cori, public domain\n'
+            'Angielski, męski — norman, public domain\n'
+            'Słowacki, żeński — lili, CC0\n'
+            'Słowacki, męski — jirka (czeski, czyta po słowacku), CC0\n'
+            'Czeski, żeński — kasandra, CC BY 4.0\n'
+            'Czeski, męski — jirka, CC0\n'
+            'Polski, żeński — gosia, CC0\n'
+            'Polski, męski — darkman, CC0\n'
+            'Niemiecki, żeński — ramona, BSD-style\n'
+            'Niemiecki, męski — thorsten, CC0\n'
+            'Hiszpański, żeński — sharvard (speaker F), CC BY 3.0\n'
+            'Hiszpański, męski — davefx, CC0\n'
+            'Francuski, żeński — siwis, CC BY 4.0\n'
+            'Francuski, męski — upmc (pierre), CC BY-SA 4.0\n'
+            'Włoski, żeński — paola, CC0\n'
+            'Włoski, męski — riccardo, BSD-style',
     'style': 'Styl',
     'styleCalm': 'Spokojny',
     'styleCheerful': 'Radosniejszy',
@@ -441,6 +541,31 @@ const ui = {
     'voiceSpeed': 'Sprechtempo',
     'voiceSlow': 'Langsam',
     'voiceNormal': 'Normal',
+    'voice': 'Stimme',
+    'voiceFemale': 'Weiblich',
+    'voiceMale': 'Männlich',
+    'voicePhone': 'Stimme des Telefons',
+    'voicePlaySample': 'Beispiel abspielen',
+    'aboutTitle': 'Über die App und Danksagung',
+    'aboutIntro':
+        'Quiet Steps enthält vorab aufgenommene Stimmen und spricht ohne Internet. Piper-Stimmen stammen von rhasspy.',
+    'aboutVoices':
+        'Englisch, weiblich — cori, public domain\n'
+            'Englisch, männlich — norman, public domain\n'
+            'Slowakisch, weiblich — lili, CC0\n'
+            'Slowakisch, männlich — jirka (Tschechisch, liest Slowakisch), CC0\n'
+            'Tschechisch, weiblich — kasandra, CC BY 4.0\n'
+            'Tschechisch, männlich — jirka, CC0\n'
+            'Polnisch, weiblich — gosia, CC0\n'
+            'Polnisch, männlich — darkman, CC0\n'
+            'Deutsch, weiblich — ramona, BSD-style\n'
+            'Deutsch, männlich — thorsten, CC0\n'
+            'Spanisch, weiblich — sharvard (speaker F), CC BY 3.0\n'
+            'Spanisch, männlich — davefx, CC0\n'
+            'Französisch, weiblich — siwis, CC BY 4.0\n'
+            'Französisch, männlich — upmc (pierre), CC BY-SA 4.0\n'
+            'Italienisch, weiblich — paola, CC0\n'
+            'Italienisch, männlich — riccardo, BSD-style',
     'style': 'Stil',
     'styleCalm': 'Ruhig',
     'styleCheerful': 'Heiter',
@@ -543,6 +668,31 @@ const ui = {
     'voiceSpeed': 'Velocidad de la voz',
     'voiceSlow': 'Lenta',
     'voiceNormal': 'Normal',
+    'voice': 'Voz',
+    'voiceFemale': 'Femenina',
+    'voiceMale': 'Masculina',
+    'voicePhone': 'Voz del teléfono',
+    'voicePlaySample': 'Reproducir muestra',
+    'aboutTitle': 'Acerca de y créditos',
+    'aboutIntro':
+        'Quiet Steps incluye voces grabadas de antemano para hablar sin internet. Las voces de Piper son de rhasspy.',
+    'aboutVoices':
+        'Inglés, femenina — cori, public domain\n'
+            'Inglés, masculina — norman, public domain\n'
+            'Eslovaco, femenina — lili, CC0\n'
+            'Eslovaco, masculina — jirka (checo, lee eslovaco), CC0\n'
+            'Checo, femenina — kasandra, CC BY 4.0\n'
+            'Checo, masculina — jirka, CC0\n'
+            'Polaco, femenina — gosia, CC0\n'
+            'Polaco, masculina — darkman, CC0\n'
+            'Alemán, femenina — ramona, BSD-style\n'
+            'Alemán, masculina — thorsten, CC0\n'
+            'Español, femenina — sharvard (speaker F), CC BY 3.0\n'
+            'Español, masculina — davefx, CC0\n'
+            'Francés, femenina — siwis, CC BY 4.0\n'
+            'Francés, masculina — upmc (pierre), CC BY-SA 4.0\n'
+            'Italiano, femenina — paola, CC0\n'
+            'Italiano, masculina — riccardo, BSD-style',
     'style': 'Estilo',
     'styleCalm': 'Sereno',
     'styleCheerful': 'Alegre',
@@ -645,6 +795,31 @@ const ui = {
     'voiceSpeed': 'Vitesse de la voix',
     'voiceSlow': 'Lente',
     'voiceNormal': 'Normale',
+    'voice': 'Voix',
+    'voiceFemale': 'Féminine',
+    'voiceMale': 'Masculine',
+    'voicePhone': 'Voix du téléphone',
+    'voicePlaySample': 'Écouter un extrait',
+    'aboutTitle': 'À propos et crédits',
+    'aboutIntro':
+        'Quiet Steps inclut des voix préenregistrées pour parler sans internet. Les voix Piper sont de rhasspy.',
+    'aboutVoices':
+        'Anglais, féminine — cori, public domain\n'
+            'Anglais, masculine — norman, public domain\n'
+            'Slovaque, féminine — lili, CC0\n'
+            'Slovaque, masculine — jirka (tchèque, lit le slovaque), CC0\n'
+            'Tchèque, féminine — kasandra, CC BY 4.0\n'
+            'Tchèque, masculine — jirka, CC0\n'
+            'Polonais, féminine — gosia, CC0\n'
+            'Polonais, masculine — darkman, CC0\n'
+            'Allemand, féminine — ramona, BSD-style\n'
+            'Allemand, masculine — thorsten, CC0\n'
+            'Espagnol, féminine — sharvard (speaker F), CC BY 3.0\n'
+            'Espagnol, masculine — davefx, CC0\n'
+            'Français, féminine — siwis, CC BY 4.0\n'
+            'Français, masculine — upmc (pierre), CC BY-SA 4.0\n'
+            'Italien, féminine — paola, CC0\n'
+            'Italien, masculine — riccardo, BSD-style',
     'style': 'Style',
     'styleCalm': 'Calme',
     'styleCheerful': 'Enjoué',
@@ -747,6 +922,31 @@ const ui = {
     'voiceSpeed': 'Velocità della voce',
     'voiceSlow': 'Lenta',
     'voiceNormal': 'Normale',
+    'voice': 'Voce',
+    'voiceFemale': 'Femminile',
+    'voiceMale': 'Maschile',
+    'voicePhone': 'Voce del telefono',
+    'voicePlaySample': 'Ascolta un campione',
+    'aboutTitle': 'Informazioni e crediti',
+    'aboutIntro':
+        'Quiet Steps include voci preregistrate per parlare senza internet. Le voci Piper sono di rhasspy.',
+    'aboutVoices':
+        'Inglese, femminile — cori, public domain\n'
+            'Inglese, maschile — norman, public domain\n'
+            'Slovacco, femminile — lili, CC0\n'
+            'Slovacco, maschile — jirka (ceco, legge lo slovacco), CC0\n'
+            'Ceco, femminile — kasandra, CC BY 4.0\n'
+            'Ceco, maschile — jirka, CC0\n'
+            'Polacco, femminile — gosia, CC0\n'
+            'Polacco, maschile — darkman, CC0\n'
+            'Tedesco, femminile — ramona, BSD-style\n'
+            'Tedesco, maschile — thorsten, CC0\n'
+            'Spagnolo, femminile — sharvard (speaker F), CC BY 3.0\n'
+            'Spagnolo, maschile — davefx, CC0\n'
+            'Francese, femminile — siwis, CC BY 4.0\n'
+            'Francese, maschile — upmc (pierre), CC BY-SA 4.0\n'
+            'Italiano, femminile — paola, CC0\n'
+            'Italiano, maschile — riccardo, BSD-style',
     'style': 'Stile',
     'styleCalm': 'Calmo',
     'styleCheerful': 'Allegro',

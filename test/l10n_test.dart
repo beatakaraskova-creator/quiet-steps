@@ -9,10 +9,12 @@ import 'package:quiet_steps/l10n/glance_text.dart';
 import 'package:quiet_steps/l10n/milestone_lines.dart';
 import 'package:quiet_steps/l10n/postcard_text.dart';
 import 'package:quiet_steps/l10n/reflection_lines.dart';
+import 'package:quiet_steps/l10n/spoken_catalog.dart';
 import 'package:quiet_steps/l10n/streak_text.dart';
 import 'package:quiet_steps/l10n/ui_text.dart';
 import 'package:quiet_steps/l10n/walk_text.dart';
 import 'package:quiet_steps/main.dart';
+import 'package:quiet_steps/screens/credits_screen.dart';
 import 'package:quiet_steps/screens/history_screen.dart';
 import 'package:quiet_steps/screens/home_screen.dart';
 import 'package:quiet_steps/screens/language_picker_screen.dart';
@@ -199,6 +201,8 @@ void main() {
         _expectKeys(reflectionUi['en'], reflectionUi[lang], 'reflectionUi.$lang');
         _expectKeys(reflectionClosings['en'], reflectionClosings[lang], 'reflectionClosings.$lang');
         _expectKeys(milestoneLines['en'], milestoneLines[lang], 'milestoneLines.$lang');
+        _expectKeys(voiceSampleLines['en'], voiceSampleLines[lang], 'voiceSample.$lang');
+        expect(spokenLinesFor(lang).length, spokenLinesFor('en').length, reason: lang);
         expect(StreakText.thisWeek(lang), isNotEmpty, reason: lang);
         expect(StreakText.restDay(lang), isNotEmpty, reason: lang);
         expect(StreakText.freshStart(lang), isNotEmpty, reason: lang);
@@ -399,6 +403,15 @@ void main() {
             easy: easy,
           );
           expect(tester.takeException(), isNull, reason: 'settings $tag');
+
+          await _pumpPage(
+            tester,
+            const CreditsScreen(),
+            size: phone,
+            key: ValueKey('credits-$tag'),
+            easy: easy,
+          );
+          expect(tester.takeException(), isNull, reason: 'credits $tag');
 
           await _pumpPage(
             tester,

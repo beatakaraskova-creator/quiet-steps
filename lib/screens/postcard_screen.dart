@@ -245,14 +245,9 @@ class _PostcardScreenState extends State<PostcardScreen> {
           const SizedBox(height: 10),
           OutlinedButton(
             onPressed: _busy ? null : _share,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: p.ink,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+            style: secondaryOutlineStyle(
+              p,
               minimumSize: const Size(double.infinity, 52),
-              side: BorderSide(color: p.line),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
             ),
             child: Text(postcardUiLine(lang, 'share')),
           ),

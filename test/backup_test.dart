@@ -64,6 +64,7 @@ void main() {
       expect(got.walks.single.id, 'w1');
       expect(got.walks.single.note, 'lane');
       expect(got.settings.goal, 9000);
+      expect(got.settings.voiceKind, 'female');
       expect(got.reflectionTime, '20:30');
       expect(got.lastReflectionDate, '2026-10-13');
       expect(got.restDates, ['2026-10-12']);
@@ -279,6 +280,7 @@ extension on BackupSettings {
       milestoneMessages: milestoneMessages,
       speakMessages: speakMessages,
       voiceSpeed: voiceSpeed,
+      voiceKind: voiceKind,
       milestoneStyle: milestoneStyle,
       quietHours: quietHours,
       quietStart: quietStart,

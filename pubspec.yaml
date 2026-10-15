@@ -50,6 +50,8 @@ dependencies:
   gal: ^2.3.1
   file_picker: ^8.3.7
   home_widget: ^0.10.0
+  just_audio: ^0.10.6
+  audio_session: ^0.2.4
 
 dev_dependencies:
   flutter_test:
@@ -95,6 +97,22 @@ flutter:
   assets:
     - assets/icon/icon.png
     - assets/icon/icon_foreground.png
+    - assets/voices/en/female/
+    - assets/voices/en/male/
+    - assets/voices/sk/female/
+    - assets/voices/sk/male/
+    - assets/voices/cs/female/
+    - assets/voices/cs/male/
+    - assets/voices/pl/female/
+    - assets/voices/pl/male/
+    - assets/voices/de/female/
+    - assets/voices/de/male/
+    - assets/voices/es/female/
+    - assets/voices/es/male/
+    - assets/voices/fr/female/
+    - assets/voices/fr/male/
+    - assets/voices/it/female/
+    - assets/voices/it/male/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

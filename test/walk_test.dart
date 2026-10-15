@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quiet_steps/l10n/walk_text.dart';
 import 'package:quiet_steps/models/walk_entry.dart';
 import 'package:quiet_steps/services/milestones.dart';
+import 'package:quiet_steps/services/step_math.dart';
 import 'package:quiet_steps/services/store.dart';
 import 'package:quiet_steps/services/walks.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,6 +25,57 @@ void main() {
       expect(walkStepDifference(1000, 1500), 500);
       expect(walkStepDifference(0, 42), 42);
       expect(walkStepDifference(800, 800), 0);
+    });
+
+    test('adds carry from a walk that crossed midnight', () {
+      expect(
+        walkStepsNow(startSteps: 0, currentSteps: 200, carry: 500),
+        700,
+      );
+      expect(
+        walkCarryAfterMidnight(
+          walkActive: true,
+          startSteps: 1000,
+          yesterdaySteps: 1500,
+          currentCarry: 0,
+        ),
+        500,
+      );
+    });
+
+    test('a live walk keeps steps when the day rolls over', () async {
+      SharedPreferences.setMockInitialValues({});
+      final store = Store.instance;
+      await store.init();
+      store.todayDate = todayKey(DateTime.now().subtract(const Duration(days: 1)));
+      store.todaySteps = 1500;
+      store.todayOffset = 0;
+      store.lastRaw = 1500;
+      store.startWalk('move', 1000, DateTime.now().subtract(const Duration(hours: 2)));
+
+      expect(await applyRawSteps(store, 1500), 0);
+      expect(store.walkCarrySteps, 500);
+      expect(store.walkStartSteps, 0);
+      expect(store.walkActive, isTrue);
+
+      expect(await applyRawSteps(store, 1700), 200);
+      expect(
+        walkStepsNow(
+          startSteps: store.walkStartSteps,
+          currentSteps: store.todaySteps,
+          carry: store.walkCarrySteps,
+        ),
+        700,
+      );
+      final walk = finishWalk(
+        mood: store.walkMood,
+        startSteps: store.walkStartSteps,
+        currentSteps: store.todaySteps,
+        start: DateTime.fromMillisecondsSinceEpoch(store.walkStartMs),
+        end: DateTime.now(),
+        carry: store.walkCarrySteps,
+      );
+      expect(walk.steps, 700);
     });
 
     test('clamps a drop in the day count to zero', () {

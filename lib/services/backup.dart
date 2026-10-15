@@ -33,6 +33,7 @@ class BackupSettings {
     required this.milestoneMessages,
     required this.speakMessages,
     required this.voiceSpeed,
+    required this.voiceKind,
     required this.milestoneStyle,
     required this.quietHours,
     required this.quietStart,
@@ -55,6 +56,7 @@ class BackupSettings {
   final bool milestoneMessages;
   final bool speakMessages;
   final String voiceSpeed;
+  final String voiceKind;
   final String milestoneStyle;
   final bool quietHours;
   final String quietStart;
@@ -77,6 +79,7 @@ class BackupSettings {
         'milestoneMessages': milestoneMessages,
         'speakMessages': speakMessages,
         'voiceSpeed': voiceSpeed,
+        'voiceKind': voiceKind,
         'milestoneStyle': milestoneStyle,
         'quietHours': quietHours,
         'quietStart': quietStart,
@@ -100,6 +103,7 @@ class BackupSettings {
         milestoneMessages: true,
         speakMessages: false,
         voiceSpeed: 'normal',
+        voiceKind: 'female',
         milestoneStyle: 'calm',
         quietHours: true,
         quietStart: '22:00',
@@ -234,6 +238,7 @@ BackupSnapshot snapshotFromStore(
       milestoneMessages: store.milestoneMessages,
       speakMessages: store.speakMessages,
       voiceSpeed: store.voiceSpeed,
+      voiceKind: store.voiceKind,
       milestoneStyle: store.milestoneStyle,
       quietHours: store.quietHours,
       quietStart: store.quietStart,
@@ -466,6 +471,10 @@ BackupSettings? _parseSettings(Map<String, dynamic> raw) {
 
   final voice = (raw['voiceSpeed'] ?? d.voiceSpeed).toString();
   if (voice != 'slow' && voice != 'normal') return null;
+  var voiceKind = (raw['voiceKind'] ?? d.voiceKind).toString();
+  if (voiceKind != 'female' && voiceKind != 'male' && voiceKind != 'phone') {
+    voiceKind = 'female';
+  }
   final style = (raw['milestoneStyle'] ?? d.milestoneStyle).toString();
   if (style != 'calm' && style != 'cheerful') return null;
   final language = (raw['language'] ?? d.language).toString();
@@ -500,6 +509,7 @@ BackupSettings? _parseSettings(Map<String, dynamic> raw) {
     milestoneMessages: b('milestoneMessages', d.milestoneMessages),
     speakMessages: b('speakMessages', d.speakMessages),
     voiceSpeed: voice,
+    voiceKind: voiceKind,
     milestoneStyle: style,
     quietHours: b('quietHours', d.quietHours),
     quietStart: quietStart,
@@ -619,6 +629,7 @@ void _writeSettings(Store store, BackupSettings s) {
   store.milestoneMessages = s.milestoneMessages;
   store.speakMessages = s.speakMessages;
   store.voiceSpeed = s.voiceSpeed;
+  store.voiceKind = s.voiceKind;
   store.milestoneStyle = s.milestoneStyle;
   store.quietHours = s.quietHours;
   store.quietStart = s.quietStart;

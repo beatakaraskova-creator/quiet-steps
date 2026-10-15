@@ -11,6 +11,26 @@ int walkStepDifference(int startSteps, int currentSteps) {
   return d < 0 ? 0 : d;
 }
 
+int walkStepsNow({
+  required int startSteps,
+  required int currentSteps,
+  int carry = 0,
+}) {
+  final extra = carry < 0 ? 0 : carry;
+  return extra + walkStepDifference(startSteps, currentSteps);
+}
+
+int walkCarryAfterMidnight({
+  required bool walkActive,
+  required int startSteps,
+  required int yesterdaySteps,
+  required int currentCarry,
+}) {
+  if (!walkActive) return currentCarry < 0 ? 0 : currentCarry;
+  final base = currentCarry < 0 ? 0 : currentCarry;
+  return base + walkStepDifference(startSteps, yesterdaySteps);
+}
+
 int walkMinutes(DateTime start, DateTime end) {
   final m = end.difference(start).inMinutes;
   return m < 0 ? 0 : m;
@@ -77,11 +97,16 @@ WalkEntry finishWalk({
   required DateTime end,
   String note = '',
   String? id,
+  int carry = 0,
 }) {
   return WalkEntry(
     id: id ?? '${end.millisecondsSinceEpoch}',
     mood: mood,
-    steps: walkStepDifference(startSteps, currentSteps),
+    steps: walkStepsNow(
+      startSteps: startSteps,
+      currentSteps: currentSteps,
+      carry: carry,
+    ),
     minutes: walkMinutes(start, end),
     note: clipWalkNote(note),
     startedAt: start.toIso8601String(),

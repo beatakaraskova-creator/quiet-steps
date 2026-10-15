@@ -20,6 +20,7 @@ void main() {
     await store.init();
     expect(store.milestoneMessages, isTrue);
     expect(store.speakMessages, isFalse);
+    expect(store.voiceKind, 'female');
     expect(store.voiceSpeed, 'normal');
     expect(store.milestoneStyle, 'calm');
     expect(store.quietHours, isTrue);
@@ -33,6 +34,7 @@ void main() {
     store.languagePicked = true;
     store.language = 'sk';
     store.speakMessages = true;
+    store.voiceKind = 'male';
     store.voiceSpeed = 'slow';
     store.milestoneStyle = 'cheerful';
     store.quietHours = false;
@@ -45,6 +47,7 @@ void main() {
     expect(store.languagePicked, isTrue);
     expect(store.language, 'sk');
     expect(store.speakMessages, isTrue);
+    expect(store.voiceKind, 'male');
     expect(store.voiceSpeed, 'slow');
     expect(store.milestoneStyle, 'cheerful');
     expect(store.quietHours, isFalse);

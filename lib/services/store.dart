@@ -47,6 +47,8 @@ class Store {
   static const _kWalkStartMs = 'walk_start_ms';
   static const _kWalks = 'walks';
   static const _kBigSimple = 'big_simple';
+  static const _kVoiceKind = 'voice_kind';
+  static const _kWalkCarry = 'walk_carry_steps';
 
   late SharedPreferences _p;
 
@@ -123,6 +125,14 @@ class Store {
   String get voiceSpeed => _p.getString(_kVoiceSpeed) ?? 'normal';
   set voiceSpeed(String v) => _p.setString(_kVoiceSpeed, v);
 
+  String get voiceKind {
+    final v = _p.getString(_kVoiceKind) ?? 'female';
+    if (v == 'male' || v == 'phone' || v == 'female') return v;
+    return 'female';
+  }
+
+  set voiceKind(String v) => _p.setString(_kVoiceKind, v);
+
   String get milestoneStyle => _p.getString(_kMilestoneStyle) ?? 'calm';
   set milestoneStyle(String v) => _p.setString(_kMilestoneStyle, v);
 
@@ -161,6 +171,9 @@ class Store {
 
   int get walkStartMs => _p.getInt(_kWalkStartMs) ?? 0;
   set walkStartMs(int v) => _p.setInt(_kWalkStartMs, v);
+
+  int get walkCarrySteps => _p.getInt(_kWalkCarry) ?? 0;
+  set walkCarrySteps(int v) => _p.setInt(_kWalkCarry, v);
 
   bool get walkActive => walkMood.isNotEmpty && walkStartMs > 0;
 
@@ -212,12 +225,14 @@ class Store {
     walkMood = mood;
     walkStartSteps = stepsNow;
     walkStartMs = start.millisecondsSinceEpoch;
+    walkCarrySteps = 0;
   }
 
   void clearWalk() {
     walkMood = '';
     walkStartSteps = 0;
     walkStartMs = 0;
+    walkCarrySteps = 0;
   }
 
   List<WalkEntry> walks() {

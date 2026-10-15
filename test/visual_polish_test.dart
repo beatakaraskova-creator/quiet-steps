@@ -106,7 +106,7 @@ void main() {
       tester,
     ) async {
       await _boot();
-      await _pumpPage(tester, const SettingsScreen());
+      await _pumpPage(tester, const SettingsScreen(), size: const Size(400, 2200));
       expect(find.text('Evening reflection'), findsOneWidget);
       expect(find.text('Reflection time'), findsOneWidget);
       expect(find.byKey(const ValueKey('settings-reflection-time')), findsOneWidget);

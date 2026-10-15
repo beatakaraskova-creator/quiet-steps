@@ -170,6 +170,11 @@ void main() {
     expect(find.text(StreakText.steps('en', data.totalSteps)), findsNothing);
     expect(overflows, isEmpty, reason: overflows.join('\n'));
     expect(tester.takeException(), isNull);
+
+    final cal = tester.getRect(find.byKey(const ValueKey('postcard-calendar')));
+    final stats = tester.getRect(find.byKey(const ValueKey('postcard-stats')));
+    expect(stats.top - cal.bottom, lessThan(20));
+    expect(cal.height, greaterThan(280));
   });
 
   testWidgets('postcard layout holds in all 8 languages', (tester) async {

@@ -24,7 +24,7 @@ Future<void> _loadFonts() async {
   await loader.load();
 }
 
-const _smallSize = Size(550, 200);
+const _smallSize = Size(380, 260);
 const _mediumSize = Size(800, 400);
 
 void main() {
@@ -118,7 +118,7 @@ void main() {
 
       final s = await decode(small);
       final m = await decode(medium);
-      expect(s.width / s.height, closeTo(2.75, 0.08));
+      expect(s.width / s.height, closeTo(1.46, 0.12));
       expect(m.width / m.height, closeTo(2.0, 0.08));
     });
   });
@@ -136,37 +136,36 @@ class _SmallPreview extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
-        child: Row(
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              'assets/icon/icon_foreground.png',
-              width: 72,
-              height: 72,
-              filterQuality: FilterQuality.medium,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
+            Row(
+              children: [
+                Image.asset(
+                  'assets/icon/icon_foreground.png',
+                  width: 56,
+                  height: 56,
+                  filterQuality: FilterQuality.medium,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
                     '4,218',
                     style: TextStyle(
                       fontFamily: 'Roboto',
                       color: pack.ink,
-                      fontSize: 48,
+                      fontSize: 42,
                       fontWeight: FontWeight.w700,
                       height: 1,
                       letterSpacing: -1,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  const _Bar(progress: 4218 / 8000),
-                ],
-              ),
+                ),
+              ],
             ),
+            const Spacer(),
+            const _Bar(progress: 4218 / 8000),
           ],
         ),
       ),
@@ -232,7 +231,7 @@ class _MediumPreview extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 16),
             const _Bar(progress: 4218 / 8000),
           ],
         ),

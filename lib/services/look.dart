@@ -11,6 +11,30 @@ import 'easy_mode.dart';
 import 'glance.dart';
 import 'store.dart';
 
+/// Outlined secondary actions (Start a walk, Pause counting, End walk).
+ButtonStyle secondaryOutlineStyle(
+  LookPack pack, {
+  bool photo = false,
+  EdgeInsetsGeometry? padding,
+  Size? minimumSize,
+  double radius = 14,
+  double borderWidth = 1.6,
+}) {
+  final border = photo
+      ? pack.ink.withValues(alpha: pack.light ? 0.38 : 0.45)
+      : Color.lerp(pack.ink, pack.accent, pack.light ? 0.22 : 0.38)!;
+  return OutlinedButton.styleFrom(
+    foregroundColor: pack.ink,
+    backgroundColor: Colors.transparent,
+    padding: padding ?? const EdgeInsets.symmetric(vertical: 16),
+    minimumSize: minimumSize,
+    side: BorderSide(color: border, width: borderWidth),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(radius),
+    ),
+  );
+}
+
 /// Live look. Swap a pack without touching step code.
 class Look extends ChangeNotifier {
   Look._();

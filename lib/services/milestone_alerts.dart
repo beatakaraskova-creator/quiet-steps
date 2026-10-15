@@ -1,14 +1,13 @@
 import 'dart:ui' show PlatformDispatcher;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 import '../l10n/ui_text.dart';
 import 'milestones.dart';
 import 'reflection_alerts.dart';
 import 'step_math.dart';
 import 'store.dart';
+import 'voice.dart';
 
 /// Shows a gentle milestone notification and optionally speaks it.
 /// Safe to call from the background step-task isolate.
@@ -20,7 +19,6 @@ class MilestoneAlerts {
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
-  FlutterTts? _tts;
   bool _inited = false;
 
   String _copyLang() {
@@ -107,7 +105,13 @@ class MilestoneAlerts {
       if (line.isEmpty) continue;
       await _show(line, key, silent: quiet);
       if (!quiet && store.speakMessages) {
-        await _speak(line, language, store.voiceSpeed);
+        await Voice.instance.speak(
+          text: line,
+          language: language,
+          speed: store.voiceSpeed,
+          style: style,
+          voiceKind: store.voiceKind,
+        );
       }
     }
   }
@@ -138,31 +142,4 @@ class MilestoneAlerts {
     } catch (_) {}
   }
 
-  Future<void> _speak(String line, String language, String speed) async {
-    try {
-      _tts ??= FlutterTts();
-      final locale = ttsLocales[language] ?? 'en-US';
-      var ok = _langOk(await _tts!.isLanguageAvailable(locale));
-      if (ok) {
-        await _tts!.setLanguage(locale);
-      } else {
-        ok = _langOk(await _tts!.isLanguageAvailable(language));
-        if (!ok) return;
-        await _tts!.setLanguage(language);
-      }
-      await _tts!.setSpeechRate(speed == 'slow' ? 0.35 : 0.5);
-      await _tts!.speak(line);
-    } catch (_) {
-      // No voice for this language, or TTS is unavailable. Text stays.
-    }
-  }
-
-  bool _langOk(dynamic value) {
-    if (value == true || value == 1 || value == 1.0) return true;
-    if (value is String) {
-      final v = value.toLowerCase();
-      return v == 'true' || v == '1';
-    }
-    return false;
-  }
 }

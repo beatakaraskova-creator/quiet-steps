@@ -56,13 +56,13 @@ class PostcardFace extends StatelessWidget {
                     children: [
                       Image.asset(
                         'assets/icon/icon_foreground.png',
-                        width: 96,
-                        height: 96,
+                        width: 240,
+                        height: 240,
                         filterQuality: FilterQuality.medium,
                         errorBuilder: (_, _, _) => Icon(
                           Icons.directions_walk,
                           color: p.accent,
-                          size: 80,
+                          size: 200,
                         ),
                       ),
                       const SizedBox(width: 18),
@@ -107,6 +107,7 @@ class PostcardFace extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Expanded(
+                    key: const ValueKey('postcard-calendar'),
                     child: Column(
                       children: [
                         _WeekdayRow(language: lang, pack: p),
@@ -117,8 +118,9 @@ class PostcardFace extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
                   Row(
+                    key: const ValueKey('postcard-stats'),
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _stat(StreakText.goodDays(lang, data.goodDays), p),
@@ -158,7 +160,7 @@ class PostcardFace extends StatelessWidget {
           text,
           style: TextStyle(
             color: p.muted,
-            fontSize: 36,
+            fontSize: 42,
             height: 1.3,
           ),
           maxLines: 4,

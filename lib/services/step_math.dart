@@ -1,4 +1,5 @@
 import 'store.dart';
+import 'walks.dart';
 
 String todayKey([DateTime? now]) {
   final d = now ?? DateTime.now();
@@ -21,7 +22,17 @@ Future<int> applyRawSteps(Store store, int raw) async {
   }
 
   if (store.todayDate != key) {
-    await store.lockDay(store.todayDate, store.todaySteps);
+    final yesterdaySteps = store.todaySteps;
+    await store.lockDay(store.todayDate, yesterdaySteps);
+    if (store.walkActive) {
+      store.walkCarrySteps = walkCarryAfterMidnight(
+        walkActive: true,
+        startSteps: store.walkStartSteps,
+        yesterdaySteps: yesterdaySteps,
+        currentCarry: store.walkCarrySteps,
+      );
+      store.walkStartSteps = 0;
+    }
     store.todayDate = key;
     store.todayOffset = raw;
     store.todaySteps = 0;

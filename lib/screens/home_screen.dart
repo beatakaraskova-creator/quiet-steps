@@ -152,6 +152,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       currentSteps: store.todaySteps,
       start: start,
       end: end,
+      carry: store.walkCarrySteps,
     );
     final line = pickWalkLine(language: lang, mood: entry.mood);
     store.clearWalk();
@@ -362,32 +363,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             Row(
               children: [
                 Expanded(
-                  child: FilledButton(
-                    onPressed: engine.counting ? engine.stop : engine.start,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: engine.counting
-                          ? look.card.withValues(alpha: hasPhoto ? 0.45 : 1)
-                          : look.accent,
-                      foregroundColor:
-                          engine.counting ? look.ink : look.onAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        side: engine.counting
-                            ? BorderSide(
-                                color: hasPhoto
-                                    ? look.ink.withValues(alpha: 0.28)
-                                    : look.line,
-                              )
-                            : BorderSide.none,
-                      ),
-                    ),
-                    child: Text(
-                      engine.counting
-                          ? uiLine(lang, 'pauseCounting')
-                          : uiLine(lang, 'startCounting'),
-                    ),
-                  ),
+                  child: engine.counting
+                      ? OutlinedButton(
+                          onPressed: engine.stop,
+                          style: secondaryOutlineStyle(look, photo: hasPhoto),
+                          child: Text(uiLine(lang, 'pauseCounting')),
+                        )
+                      : FilledButton(
+                          onPressed: engine.start,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: look.accent,
+                            foregroundColor: look.onAccent,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(uiLine(lang, 'startCounting')),
+                        ),
                 ),
               ],
             ),
@@ -401,18 +394,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             else
               OutlinedButton(
                 onPressed: _chooseMood,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: look.ink,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                style: secondaryOutlineStyle(
+                  look,
+                  photo: hasPhoto,
                   minimumSize: const Size(double.infinity, 52),
-                  side: BorderSide(
-                    color: hasPhoto
-                        ? look.ink.withValues(alpha: 0.28)
-                        : look.line,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                 ),
                 child: Text(walkUiLine(lang, 'start')),
               ),
@@ -687,12 +672,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           )
-        : OutlinedButton.styleFrom(
-            foregroundColor: p.ink,
-            minimumSize: const Size(double.infinity, easyTapMin),
+        : secondaryOutlineStyle(
+            p,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            side: BorderSide(color: p.line, width: 2),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            minimumSize: const Size(double.infinity, easyTapMin),
+            radius: 16,
+            borderWidth: 2,
           );
     return filled
         ? FilledButton(key: key, onPressed: onPressed, style: style, child: child)
@@ -831,7 +816,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final store = Store.instance;
     final start = DateTime.fromMillisecondsSinceEpoch(store.walkStartMs);
     final minutes = walkMinutes(start, DateTime.now());
-    final walkSteps = walkStepDifference(store.walkStartSteps, stepsNow);
+    final walkSteps = walkStepsNow(
+      startSteps: store.walkStartSteps,
+      currentSteps: stepsNow,
+      carry: store.walkCarrySteps,
+    );
     return GlassPanel(
       frosted: photo,
       color: pack.card,
@@ -857,13 +846,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: _endWalk,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: pack.ink,
-              side: BorderSide(color: pack.line),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
+            style: secondaryOutlineStyle(pack),
             child: Text(walkUiLine(language, 'end')),
           ),
         ],
