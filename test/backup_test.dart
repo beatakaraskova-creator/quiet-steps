@@ -286,6 +286,7 @@ extension on BackupSettings {
       language: language,
       onboardingDone: onboardingDone,
       firedMilestonesRaw: firedMilestonesRaw,
+      bigSimple: bigSimple,
     );
   }
 }

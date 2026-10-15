@@ -45,6 +45,7 @@ class Store {
   static const _kWalkStartSteps = 'walk_start_steps';
   static const _kWalkStartMs = 'walk_start_ms';
   static const _kWalks = 'walks';
+  static const _kBigSimple = 'big_simple';
 
   late SharedPreferences _p;
 
@@ -158,6 +159,9 @@ class Store {
   set walkStartMs(int v) => _p.setInt(_kWalkStartMs, v);
 
   bool get walkActive => walkMood.isNotEmpty && walkStartMs > 0;
+
+  bool get bigSimple => _p.getBool(_kBigSimple) ?? false;
+  set bigSimple(bool v) => _p.setBool(_kBigSimple, v);
 
   List<DayRecord> history() {
     final raw = _p.getString(_kHistory);

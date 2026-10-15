@@ -59,7 +59,7 @@ class LookScreen extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               ColourWheel(
-                color: background ? p.bg : p.accent,
+                color: background ? look.basePack.bg : look.basePack.accent,
                 onChanged: (c) {
                   if (background) {
                     look.setCustomColors(bg: c);

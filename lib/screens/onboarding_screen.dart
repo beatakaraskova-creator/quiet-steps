@@ -1,7 +1,11 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 
 import '../l10n/app_text.dart';
+import '../l10n/easy_text.dart';
 import '../models/look_pack.dart';
+import '../services/milestones.dart';
 import '../services/look.dart';
 import '../services/step_engine.dart';
 import '../services/store.dart';
@@ -19,6 +23,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   late final TextEditingController _goal;
   int _index = 0;
   bool _busy = false;
+  bool _easy = false;
 
   @override
   void initState() {
@@ -41,6 +46,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  String get _onboardLang => resolveLanguage(
+        stored: Store.instance.language,
+        deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
+      );
+
   Future<void> _next() async {
     if (_index < 2) {
       _goTo(_index + 1);
@@ -61,6 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() => _busy = true);
     Store.instance.goal = parsed;
     Store.instance.onboardingDone = true;
+    await Look.instance.setBigSimple(_easy);
     await StepEngine.instance.start();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
@@ -224,6 +235,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   borderSide: BorderSide.none,
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                easyUiLine(_onboardLang, 'title'),
+                style: TextStyle(color: p.ink, fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                easyUiLine(_onboardLang, 'onboarding'),
+                style: TextStyle(color: p.muted),
+              ),
+              value: _easy,
+              onChanged: (v) => setState(() => _easy = v),
+              activeThumbColor: p.accent,
             ),
           ],
         ],

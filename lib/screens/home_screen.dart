@@ -4,8 +4,11 @@ import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/easy_text.dart';
 import '../l10n/streak_text.dart';
 import '../l10n/walk_text.dart';
+import '../models/look_pack.dart';
+import '../services/easy_mode.dart';
 import '../services/glance.dart';
 import '../services/postcard.dart';
 import '../services/look.dart';
@@ -43,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     engine.addListener(_tick);
+    Look.instance.addListener(_tick);
     if (Store.instance.walkActive) _ensureWalkTimer();
   }
 
@@ -50,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     engine.removeListener(_tick);
+    Look.instance.removeListener(_tick);
     _stopWalkTimer();
     super.dispose();
   }
@@ -185,6 +190,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final photo = Look.instance.backgroundPath;
     final photoFile = photo != null ? File(photo) : null;
     final hasPhoto = photoFile != null && photoFile.existsSync();
+
+    if (Look.instance.bigSimple) {
+      return _easyHome(
+        store: store,
+        look: look,
+        scale: scale,
+        steps: steps,
+        goal: goal,
+        lang: lang,
+      );
+    }
 
     return Container(
       key: ValueKey(Look.instance.photoTick),
@@ -498,6 +514,297 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
+  Widget _easyHome({
+    required Store store,
+    required LookPack look,
+    required double scale,
+    required int steps,
+    required int goal,
+    required String lang,
+  }) {
+    final pack = look;
+    final status = glanceDataFromStore(store, deviceLanguage: lang).statusLine;
+    return Scaffold(
+      key: const ValueKey('easy-home'),
+      backgroundColor: pack.bg,
+      appBar: AppBar(
+        backgroundColor: pack.bg,
+        foregroundColor: pack.ink,
+        title: Text(
+          'Quiet Steps',
+          style: TextStyle(
+            fontSize: 18 * scale,
+            fontWeight: FontWeight.w600,
+            color: pack.ink,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+          child: Column(
+            children: [
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: SizedBox(
+                    width: easyRingSize,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        StepRing(
+                          steps: steps,
+                          goal: goal,
+                          track: pack.line,
+                          accent: pack.accent,
+                          size: easyRingSize,
+                          strokeWidth: easyRingStroke,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 28),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                _fmt(steps),
+                                key: const ValueKey('easy-steps'),
+                                style: TextStyle(
+                                  fontSize: 56 * scale,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1,
+                                  color: pack.ink,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: easyRingSize,
+                          child: Text(
+                            status,
+                            key: const ValueKey('easy-status'),
+                            textAlign: TextAlign.center,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: pack.ink,
+                              fontSize: 20 * scale,
+                              fontWeight: FontWeight.w600,
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                        if (engine.permissionDenied || engine.error != null) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: easyRingSize,
+                            child: Text(
+                              engine.error ??
+                                  'Physical activity permission is needed so the phone can count steps. Location is not used.',
+                              textAlign: TextAlign.center,
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: pack.muted,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (store.walkActive) ...[
+                Text(
+                  '${walkMoodLabel(lang, store.walkMood)}  ·  ${walkMinutesLabel(lang, walkMinutes(DateTime.fromMillisecondsSinceEpoch(store.walkStartMs), DateTime.now()))}',
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: pack.accent,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _easyButton(
+                  key: const ValueKey('easy-walk'),
+                  label: walkUiLine(lang, 'end'),
+                  filled: true,
+                  pack: pack,
+                  onPressed: _endWalk,
+                ),
+              ] else
+                _easyButton(
+                  key: const ValueKey('easy-walk'),
+                  label: walkUiLine(lang, 'start'),
+                  filled: false,
+                  pack: pack,
+                  onPressed: _chooseMood,
+                ),
+              const SizedBox(height: 12),
+              _easyButton(
+                key: const ValueKey('easy-more'),
+                label: easyUiLine(lang, 'more'),
+                filled: true,
+                pack: pack,
+                onPressed: () => _openMore(lang, pack),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _easyButton({
+    required Key key,
+    required String label,
+    required bool filled,
+    required LookPack pack,
+    required VoidCallback onPressed,
+  }) {
+    final p = pack;
+    final child = Text(
+      label,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+    );
+    final style = filled
+        ? FilledButton.styleFrom(
+            backgroundColor: p.accent,
+            foregroundColor: p.onAccent,
+            minimumSize: const Size(double.infinity, easyTapMin),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          )
+        : OutlinedButton.styleFrom(
+            foregroundColor: p.ink,
+            minimumSize: const Size(double.infinity, easyTapMin),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            side: BorderSide(color: p.line, width: 2),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          );
+    return filled
+        ? FilledButton(key: key, onPressed: onPressed, style: style, child: child)
+        : OutlinedButton(key: key, onPressed: onPressed, style: style, child: child);
+  }
+
+  Future<void> _openMore(String lang, LookPack pack) async {
+    final p = pack;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: p.card,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) {
+        Widget row(String key, String label, VoidCallback open) {
+          return ListTile(
+            key: ValueKey('easy-more-$key'),
+            minVerticalPadding: 18,
+            title: Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: p.ink,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: Icon(Icons.chevron_right, color: p.muted),
+            onTap: () {
+              Navigator.pop(ctx);
+              open();
+            },
+          );
+        }
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 16),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    child: Text(
+                      easyUiLine(lang, 'more'),
+                      style: TextStyle(
+                        color: p.ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  row('week', easyUiLine(lang, 'thisWeek'), () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const _EasyWeekScreen()),
+                    );
+                  }),
+                  row('reflection', easyUiLine(lang, 'reflection'), () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ReflectionScreen()),
+                    );
+                  }),
+                  row('journal', easyUiLine(lang, 'journal'), () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const WalkJournalScreen()),
+                    );
+                  }),
+                  row('postcard', easyUiLine(lang, 'postcard'), () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const PostcardScreen()),
+                    );
+                  }),
+                  row('settings', easyUiLine(lang, 'settings'), () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    ).then((_) {
+                      scheduleQuietStepsWidgetPush(force: true);
+                      if (mounted) setState(() {});
+                    });
+                  }),
+                  row('look', easyUiLine(lang, 'look'), () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const LookScreen()),
+                    ).then((_) {
+                      scheduleQuietStepsWidgetPush(force: true);
+                      if (mounted) setState(() {});
+                    });
+                  }),
+                  row('history', easyUiLine(lang, 'history'), () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                    );
+                  }),
+                  row(
+                    'counting',
+                    engine.counting
+                        ? easyUiLine(lang, 'pauseCounting')
+                        : easyUiLine(lang, 'startCounting'),
+                    () {
+                      if (engine.counting) {
+                        engine.stop();
+                      } else {
+                        engine.start();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   List<Shadow>? _photoShadow(bool photo, {bool strong = false}) {
     if (!photo) return null;
     return [
@@ -637,6 +944,64 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EasyWeekScreen extends StatelessWidget {
+  const _EasyWeekScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = Store.instance;
+    final pack = Look.instance.pack;
+    final lang = resolveLanguage(
+      stored: store.language,
+      deviceLanguageCode: PlatformDispatcher.instance.locale.languageCode,
+    );
+    final map = <String, int>{
+      for (final d in store.history()) d.date: d.steps,
+    };
+    final key = store.todayDate.isEmpty ? todayKey() : store.todayDate;
+    map[key] = store.todaySteps;
+    return Scaffold(
+      backgroundColor: pack.bg,
+      appBar: AppBar(
+        backgroundColor: pack.bg,
+        foregroundColor: pack.ink,
+        title: Text(easyUiLine(lang, 'thisWeek')),
+        leadingWidth: 88,
+        leading: TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(easyUiLine(lang, 'back')),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        children: [
+          WeekStrip(
+            stepsByDate: map,
+            goal: store.goal,
+            now: DateTime.now(),
+            language: lang,
+            pack: pack,
+            fontScale: Look.instance.fontScale,
+            frosted: false,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: easyTapMin,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                );
+              },
+              child: Text(easyUiLine(lang, 'history')),
+            ),
+          ),
+        ],
       ),
     );
   }

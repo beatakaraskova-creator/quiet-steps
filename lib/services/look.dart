@@ -7,6 +7,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../models/look_pack.dart';
+import 'easy_mode.dart';
+import 'glance.dart';
 import 'store.dart';
 
 /// Live look. Swap a pack without touching step code.
@@ -14,10 +16,14 @@ class Look extends ChangeNotifier {
   Look._();
   static final Look instance = Look._();
 
-  LookPack pack = LookPack.quietGold;
+  LookPack _base = LookPack.quietGold;
+  bool bigSimple = false;
   double fontScale = 1.0;
   String? backgroundPath;
   int photoTick = 0;
+
+  LookPack get pack => bigSimple ? accessibleLook(_base) : _base;
+  LookPack get basePack => _base;
 
   static const _sourceName = 'look_bg_source.jpg';
   static const _croppedName = 'look_bg.png';
@@ -25,13 +31,14 @@ class Look extends ChangeNotifier {
   Future<void> load() async {
     final s = Store.instance;
     if (s.lookCustom) {
-      pack = LookPack.custom(
+      _base = LookPack.custom(
         bg: Color(s.lookBgColor),
         accent: Color(s.lookAccent),
       );
     } else {
-      pack = LookPack.byId(s.lookId);
+      _base = LookPack.byId(s.lookId);
     }
+    bigSimple = s.bigSimple;
     fontScale = s.fontScale;
     final path = s.backgroundPath;
     backgroundPath = (path != null && path.isNotEmpty) ? path : null;
@@ -39,16 +46,23 @@ class Look extends ChangeNotifier {
   }
 
   Future<void> setPack(LookPack next) async {
-    pack = next;
+    _base = next;
     Store.instance.lookId = next.id;
     Store.instance.lookCustom = false;
     notifyListeners();
   }
 
+  Future<void> setBigSimple(bool v) async {
+    bigSimple = v;
+    Store.instance.bigSimple = v;
+    notifyListeners();
+    scheduleQuietStepsWidgetPush(force: true);
+  }
+
   Future<void> setCustomColors({Color? accent, Color? bg}) async {
-    final nextAccent = accent ?? pack.accent;
-    final nextBg = bg ?? pack.bg;
-    pack = LookPack.custom(bg: nextBg, accent: nextAccent);
+    final nextAccent = accent ?? _base.accent;
+    final nextBg = bg ?? _base.bg;
+    _base = LookPack.custom(bg: nextBg, accent: nextAccent);
     final s = Store.instance;
     s.lookId = pack.id;
     s.lookCustom = true;
@@ -129,6 +143,14 @@ class Look extends ChangeNotifier {
   ThemeData get theme {
     final packLook = pack;
     final brightness = packLook.light ? Brightness.light : Brightness.dark;
+    final easy = bigSimple;
+    final buttonMin = easy
+        ? FilledButton.styleFrom(
+            minimumSize: const Size(easyTapMin, easyTapMin),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            tapTargetSize: MaterialTapTargetSize.padded,
+          )
+        : null;
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
@@ -144,16 +166,20 @@ class Look extends ChangeNotifier {
         error: const Color(0xFFC45C5C),
         onError: Colors.white,
       ),
+      textTheme: TextTheme(
+        bodyMedium: TextStyle(color: packLook.ink, fontSize: 14 * fontScale),
+        bodyLarge: TextStyle(color: packLook.ink, fontSize: 16 * fontScale),
+        titleLarge: TextStyle(color: packLook.ink, fontSize: 22 * fontScale),
+      ),
+      filledButtonTheme: FilledButtonThemeData(style: buttonMin),
+      outlinedButtonTheme: OutlinedButtonThemeData(style: buttonMin),
+      textButtonTheme: TextButtonThemeData(style: buttonMin),
       appBarTheme: AppBarTheme(
         backgroundColor: packLook.bg.withValues(alpha: 0.0),
         foregroundColor: packLook.ink,
         elevation: 0,
         centerTitle: false,
-      ),
-      textTheme: TextTheme(
-        bodyMedium: TextStyle(color: packLook.ink, fontSize: 14 * fontScale),
-        bodyLarge: TextStyle(color: packLook.ink, fontSize: 16 * fontScale),
-        titleLarge: TextStyle(color: packLook.ink, fontSize: 22 * fontScale),
+        toolbarHeight: easy ? 72 : kToolbarHeight,
       ),
     );
   }

@@ -10,6 +10,8 @@ class StepRing extends StatelessWidget {
     required this.track,
     required this.accent,
     required this.child,
+    this.size = 260,
+    this.strokeWidth = 12,
   });
 
   final int steps;
@@ -17,15 +19,17 @@ class StepRing extends StatelessWidget {
   final Color track;
   final Color accent;
   final Widget child;
+  final double size;
+  final double strokeWidth;
 
   @override
   Widget build(BuildContext context) {
     final t = goal <= 0 ? 0.0 : (steps / goal).clamp(0.0, 1.0);
     return SizedBox(
-      width: 260,
-      height: 260,
+      width: size,
+      height: size,
       child: CustomPaint(
-        painter: _RingPainter(t, track, accent),
+        painter: _RingPainter(t, track, accent, strokeWidth),
         child: Center(child: child),
       ),
     );
@@ -33,24 +37,25 @@ class StepRing extends StatelessWidget {
 }
 
 class _RingPainter extends CustomPainter {
-  _RingPainter(this.t, this.track, this.accent);
+  _RingPainter(this.t, this.track, this.accent, this.strokeWidth);
   final double t;
   final Color track;
   final Color accent;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
     final c = Offset(size.width / 2, size.height / 2);
-    final r = size.width / 2 - 10;
+    final r = size.width / 2 - strokeWidth;
     final bg = Paint()
       ..color = track
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
     final fg = Paint()
       ..color = accent
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
     canvas.drawCircle(c, r, bg);
@@ -65,5 +70,8 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RingPainter old) =>
-      old.t != t || old.track != track || old.accent != accent;
+      old.t != t ||
+      old.track != track ||
+      old.accent != accent ||
+      old.strokeWidth != strokeWidth;
 }

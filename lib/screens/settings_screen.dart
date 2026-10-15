@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../l10n/app_text.dart';
+import '../l10n/easy_text.dart';
 import '../models/look_pack.dart';
 import '../services/backup.dart';
 import '../services/glance.dart';
@@ -437,6 +438,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
+          _switchTile(
+            easyUiLine(lang, 'title'),
+            Look.instance.bigSimple,
+            (v) {
+              Look.instance.setBigSimple(v);
+              setState(() {});
+            },
+            p,
+            subtitle: easyUiLine(lang, 'hint'),
+          ),
+
           _field(AppText.goalLabel, goal, p),
           _field('Height (cm)', height, p),
           _field('Stride (cm)', stride, p),
@@ -561,8 +573,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String label,
     bool value,
     ValueChanged<bool> onChanged,
-    LookPack p,
-  ) {
+    LookPack p, {
+    String? subtitle,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Container(
@@ -572,6 +585,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         child: SwitchListTile(
           title: Text(label, style: TextStyle(color: p.ink, fontSize: 16)),
+          subtitle: subtitle == null
+              ? null
+              : Text(subtitle, style: TextStyle(color: p.muted, fontSize: 13)),
           value: value,
           onChanged: onChanged,
           activeThumbColor: p.accent,

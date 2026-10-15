@@ -51,4 +51,13 @@ void main() {
     expect(store.eveningReflection, isFalse);
     expect(store.reflectionTime, '21:15');
   });
+
+  test('big and simple defaults off and saves', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = Store.instance;
+    await store.init();
+    expect(store.bigSimple, isFalse);
+    store.bigSimple = true;
+    expect(store.bigSimple, isTrue);
+  });
 }

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/glance_text.dart';
 import '../l10n/streak_text.dart';
 import '../models/look_pack.dart';
+import 'easy_mode.dart';
 import 'milestones.dart';
 import 'step_math.dart';
 import 'store.dart';
@@ -46,6 +47,7 @@ class GlanceData {
     required this.muted,
     required this.line,
     required this.light,
+    required this.bigSimple,
   });
 
   final int steps;
@@ -66,10 +68,11 @@ class GlanceData {
   final int muted;
   final int line;
   final bool light;
+  final bool bigSimple;
 
   /// Identity that bypasses the once-a-minute count throttle.
   String get identity {
-    return '$date|$goal|$streakDays|${statusKind.name}|$bg|$accent|$language|$light';
+    return '$date|$goal|$streakDays|${statusKind.name}|$bg|$accent|$language|$light|$bigSimple';
   }
 }
 
@@ -109,13 +112,13 @@ int glanceProgressPermille(int steps, int goal) {
 }
 
 LookPack glancePackFromStore(Store store) {
-  if (store.lookCustom) {
-    return LookPack.custom(
-      bg: Color(store.lookBgColor),
-      accent: Color(store.lookAccent),
-    );
-  }
-  return LookPack.byId(store.lookId);
+  final base = store.lookCustom
+      ? LookPack.custom(
+          bg: Color(store.lookBgColor),
+          accent: Color(store.lookAccent),
+        )
+      : LookPack.byId(store.lookId);
+  return store.bigSimple ? accessibleLook(base) : base;
 }
 
 Map<String, int> glanceStepsByDate(Store store, DateTime now) {
@@ -148,6 +151,7 @@ GlanceData buildGlanceData({
   required String language,
   required LookPack pack,
   bool? restToday,
+  bool bigSimple = false,
 }) {
   final date = todayKey(now);
   final lang = glanceLang(language);
@@ -188,6 +192,7 @@ GlanceData buildGlanceData({
     muted: pack.muted.toARGB32(),
     line: pack.line.toARGB32(),
     light: pack.light,
+    bigSimple: bigSimple,
   );
 }
 
@@ -209,6 +214,7 @@ GlanceData glanceDataFromStore(
     now: at,
     language: lang,
     pack: glancePackFromStore(store),
+    bigSimple: store.bigSimple,
   );
 }
 
@@ -277,6 +283,7 @@ Future<void> pushQuietStepsWidget({
     await HomeWidget.saveWidgetData<int>('muted', data.muted);
     await HomeWidget.saveWidgetData<int>('line', data.line);
     await HomeWidget.saveWidgetData<bool>('light', data.light);
+    await HomeWidget.saveWidgetData<bool>('bigSimple', data.bigSimple);
     await HomeWidget.updateWidget(
       name: glanceSmallAndroidName,
       androidName: glanceSmallAndroidName,

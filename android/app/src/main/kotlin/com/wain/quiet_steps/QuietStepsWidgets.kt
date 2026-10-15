@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Build
+import android.util.TypedValue
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetProvider
@@ -68,13 +69,18 @@ object QuietStepsWidgets {
         val ink = widgetData.color("ink", DEFAULT_INK)
         val muted = widgetData.color("muted", DEFAULT_MUTED)
         val progress = widgetData.num("progress", 0).coerceIn(0, 1000)
+        val big = widgetData.flag("bigSimple")
         val track = Color.argb(64, Color.red(muted), Color.green(muted), Color.blue(muted))
+        val stepsSp = if (big) 26f else 22f
+        val statusSp = if (big) 15f else 13f
+        val streakSp = if (big) 14f else 12f
 
         appWidgetIds.forEach { widgetId ->
             val views = RemoteViews(context.packageName, layoutId)
             views.setInt(R.id.widget_bg, "setColorFilter", bg)
             views.setTextViewText(R.id.widget_steps, stepsLabel)
             views.setTextColor(R.id.widget_steps, ink)
+            views.setTextViewTextSize(R.id.widget_steps, TypedValue.COMPLEX_UNIT_SP, stepsSp)
             views.setProgressBar(R.id.widget_progress, 1000, progress, false)
             tintProgress(views, accent, track)
             views.setContentDescription(
@@ -84,8 +90,10 @@ object QuietStepsWidgets {
             if (medium) {
                 views.setTextViewText(R.id.widget_streak, streak)
                 views.setTextColor(R.id.widget_streak, muted)
+                views.setTextViewTextSize(R.id.widget_streak, TypedValue.COMPLEX_UNIT_SP, streakSp)
                 views.setTextViewText(R.id.widget_status, status)
                 views.setTextColor(R.id.widget_status, ink)
+                views.setTextViewTextSize(R.id.widget_status, TypedValue.COMPLEX_UNIT_SP, statusSp)
                 views.setInt(R.id.widget_mark, "setColorFilter", accent)
             }
             val launch = HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java)
@@ -127,5 +135,15 @@ object QuietStepsWidgets {
 
     private fun SharedPreferences.color(key: String, fallback: Int): Int {
         return num(key, fallback)
+    }
+
+    private fun SharedPreferences.flag(key: String): Boolean {
+        return when (val v = all[key]) {
+            is Boolean -> v
+            is Int -> v != 0
+            is Long -> v != 0L
+            is String -> v == "true" || v == "1"
+            else -> false
+        }
     }
 }

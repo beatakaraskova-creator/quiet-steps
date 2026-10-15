@@ -158,7 +158,7 @@ void main() {
 
   group('throttling', () {
     final t0 = DateTime(2026, 10, 14, 8, 0);
-    const id = '2026-10-14|8000|3|toGo|1|2|en|false';
+    const id = '2026-10-14|8000|3|toGo|1|2|en|false|false';
 
     test('first push always allowed', () {
       expect(
@@ -219,7 +219,7 @@ void main() {
           now: t0.add(const Duration(seconds: 10)),
           lastPush: t0,
           lastIdentity: id,
-          nextIdentity: '2026-10-15|8000|3|toGo|1|2|en|false',
+          nextIdentity: '2026-10-15|8000|3|toGo|1|2|en|false|false',
           lastSteps: 100,
           nextSteps: 0,
         ),
@@ -230,7 +230,7 @@ void main() {
           now: t0.add(const Duration(seconds: 10)),
           lastPush: t0,
           lastIdentity: id,
-          nextIdentity: '2026-10-14|9000|3|toGo|1|2|en|false',
+          nextIdentity: '2026-10-14|9000|3|toGo|1|2|en|false|false',
           lastSteps: 100,
           nextSteps: 100,
         ),
@@ -241,7 +241,7 @@ void main() {
           now: t0.add(const Duration(seconds: 10)),
           lastPush: t0,
           lastIdentity: id,
-          nextIdentity: '2026-10-14|8000|4|goalReached|1|2|en|false',
+          nextIdentity: '2026-10-14|8000|4|goalReached|1|2|en|false|false',
           lastSteps: 7990,
           nextSteps: 8000,
         ),

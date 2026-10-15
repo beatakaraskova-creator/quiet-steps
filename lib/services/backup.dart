@@ -40,6 +40,7 @@ class BackupSettings {
     required this.language,
     required this.onboardingDone,
     required this.firedMilestonesRaw,
+    required this.bigSimple,
   });
 
   final int goal;
@@ -61,6 +62,7 @@ class BackupSettings {
   final String language;
   final bool onboardingDone;
   final String firedMilestonesRaw;
+  final bool bigSimple;
 
   Map<String, dynamic> toJson() => {
         'goal': goal,
@@ -82,6 +84,7 @@ class BackupSettings {
         'language': language,
         'onboardingDone': onboardingDone,
         'firedMilestones': firedMilestonesRaw,
+        'bigSimple': bigSimple,
       };
 
   static BackupSettings defaults() => const BackupSettings(
@@ -104,6 +107,7 @@ class BackupSettings {
         language: 'auto',
         onboardingDone: true,
         firedMilestonesRaw: '',
+        bigSimple: false,
       );
 }
 
@@ -237,6 +241,7 @@ BackupSnapshot snapshotFromStore(
       language: store.language,
       onboardingDone: store.onboardingDone,
       firedMilestonesRaw: store.firedMilestonesRaw,
+      bigSimple: store.bigSimple,
     ),
   );
 }
@@ -502,6 +507,7 @@ BackupSettings? _parseSettings(Map<String, dynamic> raw) {
     language: language,
     onboardingDone: b('onboardingDone', d.onboardingDone),
     firedMilestonesRaw: fired,
+    bigSimple: b('bigSimple', d.bigSimple),
   );
 }
 
@@ -620,6 +626,7 @@ void _writeSettings(Store store, BackupSettings s) {
   store.language = s.language;
   store.onboardingDone = s.onboardingDone;
   store.firedMilestonesRaw = s.firedMilestonesRaw;
+  store.bigSimple = s.bigSimple;
 }
 
 bool backupJsonLooksPrivate(String json) {
