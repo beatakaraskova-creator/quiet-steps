@@ -94,15 +94,21 @@ class MilestoneAlerts {
 
     await init();
 
+    final day = DateTime.tryParse(date) ?? DateTime.now();
     for (final key in keys) {
+      final offset = sameBucketFiredToday(fired, key);
       fired.add(key);
       store.firedMilestonesRaw = encodeFired(date, fired);
       final line = pickMilestoneLine(
         language: language,
         style: style,
         milestone: key,
+        day: day,
+        offset: offset,
       );
       if (line.isEmpty) continue;
+      store.latestMilestoneLine = line;
+      store.latestMilestoneDate = date;
       await _show(line, key, silent: quiet);
       if (!quiet && store.speakMessages) {
         await Voice.instance.speak(

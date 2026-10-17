@@ -1,5 +1,4 @@
-import 'dart:math';
-
+import '../l10n/day_pick.dart';
 import '../l10n/milestone_lines.dart';
 
 const supportedLanguages = ['en', 'sk', 'cs', 'pl', 'de', 'es', 'fr', 'it'];
@@ -128,12 +127,17 @@ String resolveLanguage({
   return 'en';
 }
 
-/// Pick one line from `milestoneLines[language][style][milestone]`.
+/// Pick one line from `milestoneLines[language][style][milestone]` by weekday
+/// (index 0 = Monday). [day] is the step-day the milestone belongs to and
+/// [offset] is [sameBucketFiredToday] for moments that repeat within a day.
+/// [nextInt] is a test hook and wins when given.
 /// Unknown language falls back to English.
 String pickMilestoneLine({
   required String language,
   required String style,
   required String milestone,
+  DateTime? day,
+  int offset = 0,
   int Function(int max)? nextInt,
 }) {
   final langKey = milestoneLines.containsKey(language) ? language : 'en';
@@ -146,9 +150,17 @@ String pickMilestoneLine({
         milestoneLines['en']?['calm']?[bucket];
   }
   if (lines == null || lines.isEmpty) return '';
-  final pick = nextInt ?? Random().nextInt;
-  final i = pick(lines.length).clamp(0, lines.length - 1);
-  return lines[i];
+  if (nextInt != null) {
+    return lines[nextInt(lines.length).clamp(0, lines.length - 1)];
+  }
+  return lines[weekdayIndex(day ?? DateTime.now(), lines.length, offset: offset)];
+}
+
+/// How many milestones already fired today map to the same line bucket as
+/// [key] (`beyond`, `care_30k` and off-round 20k ticks can fire more than once).
+int sameBucketFiredToday(Iterable<String> firedToday, String key) {
+  final bucket = milestoneLineBucket(key);
+  return firedToday.where((k) => k != key && milestoneLineBucket(k) == bucket).length;
 }
 
 /// Milestones that were just crossed and have not fired today.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:quiet_steps/l10n/glance_text.dart';
+import 'package:quiet_steps/l10n/milestone_lines.dart';
 import 'package:quiet_steps/models/look_pack.dart';
 import 'package:quiet_steps/screens/home_screen.dart';
 import 'package:quiet_steps/screens/settings_screen.dart';
@@ -106,7 +107,7 @@ void main() {
       tester,
     ) async {
       await _boot();
-      await _pumpPage(tester, const SettingsScreen(), size: const Size(400, 2200));
+      await _pumpPage(tester, const SettingsScreen(), size: const Size(400, 2600));
       expect(find.text('Evening reflection'), findsOneWidget);
       expect(find.text('Reflection time'), findsOneWidget);
       expect(find.byKey(const ValueKey('settings-reflection-time')), findsOneWidget);
@@ -147,6 +148,23 @@ void main() {
       await _boot(steps: 8000, goal: 8000);
       await _pumpPage(tester, const HomeScreen());
       expect(find.text(glanceGoalReached('en')), findsOneWidget);
+    });
+
+    testWidgets('shows today\'s milestone line on a calm card', (tester) async {
+      await _boot();
+      final line = milestoneLines['en']!['calm']!['2500']![0];
+      Store.instance.latestMilestoneLine = line;
+      Store.instance.latestMilestoneDate = Store.instance.todayDate;
+      await _pumpPage(tester, const HomeScreen());
+      expect(find.byKey(const ValueKey('home-milestone')), findsOneWidget);
+      expect(find.text(line), findsOneWidget);
+    });
+
+    testWidgets('shows a greeting before the first milestone', (tester) async {
+      await _boot();
+      Store.instance.clearLatestMilestone();
+      await _pumpPage(tester, const HomeScreen());
+      expect(find.byKey(const ValueKey('home-milestone')), findsOneWidget);
     });
 
     testWidgets('km uses a comma in Slovak', (tester) async {

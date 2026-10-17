@@ -8,6 +8,35 @@ String todayKey([DateTime? now]) {
   return '${d.year}-$m-$day';
 }
 
+void _carryWalkPastMidnight(Store store, int yesterdaySteps) {
+  if (!store.walkActive) return;
+  store.walkCarrySteps = walkCarryAfterMidnight(
+    walkActive: true,
+    startSteps: store.walkStartSteps,
+    yesterdaySteps: yesterdaySteps,
+    currentCarry: store.walkCarrySteps,
+  );
+  store.walkStartSteps = 0;
+}
+
+/// Roll the stored day to [todayKey] with no new sensor reading.
+/// Locks yesterday, zeroes today, keeps [Store.lastRaw] as the baseline
+/// so the next event counts from 0, and clears today's milestone card.
+/// Returns true when a rollover happened.
+Future<bool> rollOverIfNewDay(Store store) async {
+  final key = todayKey();
+  if (store.todayDate.isEmpty || store.todayDate == key) return false;
+  final yesterdaySteps = store.todaySteps;
+  await store.lockDay(store.todayDate, yesterdaySteps);
+  _carryWalkPastMidnight(store, yesterdaySteps);
+  store.todayDate = key;
+  store.todayOffset = store.lastRaw;
+  store.todaySteps = 0;
+  store.firedMilestonesRaw = '';
+  store.clearLatestMilestone();
+  return true;
+}
+
 /// Apply a raw hardware step-counter reading (steps since last boot).
 /// Returns today's steps after the update.
 Future<int> applyRawSteps(Store store, int raw) async {
@@ -24,19 +53,13 @@ Future<int> applyRawSteps(Store store, int raw) async {
   if (store.todayDate != key) {
     final yesterdaySteps = store.todaySteps;
     await store.lockDay(store.todayDate, yesterdaySteps);
-    if (store.walkActive) {
-      store.walkCarrySteps = walkCarryAfterMidnight(
-        walkActive: true,
-        startSteps: store.walkStartSteps,
-        yesterdaySteps: yesterdaySteps,
-        currentCarry: store.walkCarrySteps,
-      );
-      store.walkStartSteps = 0;
-    }
+    _carryWalkPastMidnight(store, yesterdaySteps);
     store.todayDate = key;
     store.todayOffset = raw;
     store.todaySteps = 0;
     store.lastRaw = raw;
+    store.firedMilestonesRaw = '';
+    store.clearLatestMilestone();
     return 0;
   }
 

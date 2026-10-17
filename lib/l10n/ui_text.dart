@@ -37,6 +37,8 @@ const ui = {
     'voiceMale': 'Male',
     'voicePhone': "Phone's voice",
     'voicePlaySample': 'Play sample',
+    'voiceTestIn10': 'Test milestone voice in 10 seconds',
+    'latestMilestone': 'Today',
     'aboutTitle': 'About & credits',
     'aboutIntro':
         'Quiet Steps includes pre-recorded voices so it can speak without the internet. Piper voices are by rhasspy.',
@@ -165,6 +167,8 @@ const ui = {
     'voiceMale': 'Mužský',
     'voicePhone': 'Hlas telefónu',
     'voicePlaySample': 'Prehrať ukážku',
+    'voiceTestIn10': 'Vyskúšať hlas míľnika o 10 sekúnd',
+    'latestMilestone': 'Dnes',
     'aboutTitle': 'O aplikácii a poďakovania',
     'aboutIntro':
         'Quiet Steps obsahuje vopred nahraté hlasy, aby mohol hovoriť bez internetu. Hlasy Piper sú od rhasspy.',
@@ -292,6 +296,8 @@ const ui = {
     'voiceMale': 'Mužský',
     'voicePhone': 'Hlas telefonu',
     'voicePlaySample': 'Přehrát ukázku',
+    'voiceTestIn10': 'Vyzkoušet hlas milníku za 10 sekund',
+    'latestMilestone': 'Dnes',
     'aboutTitle': 'O aplikaci a poděkování',
     'aboutIntro':
         'Quiet Steps obsahuje předem nahrané hlasy, aby mohl mluvit bez internetu. Hlasy Piper jsou od rhasspy.',
@@ -419,6 +425,8 @@ const ui = {
     'voiceMale': 'Męski',
     'voicePhone': 'Głos telefonu',
     'voicePlaySample': 'Odtwórz próbkę',
+    'voiceTestIn10': 'Przetestuj głos kamienia milowego za 10 sekund',
+    'latestMilestone': 'Dziś',
     'aboutTitle': 'O aplikacji i podziękowania',
     'aboutIntro':
         'Quiet Steps zawiera nagrane wcześniej głosy, żeby mówić bez internetu. Głosy Piper pochodzą od rhasspy.',
@@ -546,6 +554,8 @@ const ui = {
     'voiceMale': 'Männlich',
     'voicePhone': 'Stimme des Telefons',
     'voicePlaySample': 'Beispiel abspielen',
+    'voiceTestIn10': 'Meilenstein-Stimme in 10 Sekunden testen',
+    'latestMilestone': 'Heute',
     'aboutTitle': 'Über die App und Danksagung',
     'aboutIntro':
         'Quiet Steps enthält vorab aufgenommene Stimmen und spricht ohne Internet. Piper-Stimmen stammen von rhasspy.',
@@ -673,6 +683,8 @@ const ui = {
     'voiceMale': 'Masculina',
     'voicePhone': 'Voz del teléfono',
     'voicePlaySample': 'Reproducir muestra',
+    'voiceTestIn10': 'Probar la voz del hito en 10 segundos',
+    'latestMilestone': 'Hoy',
     'aboutTitle': 'Acerca de y créditos',
     'aboutIntro':
         'Quiet Steps incluye voces grabadas de antemano para hablar sin internet. Las voces de Piper son de rhasspy.',
@@ -800,6 +812,8 @@ const ui = {
     'voiceMale': 'Masculine',
     'voicePhone': 'Voix du téléphone',
     'voicePlaySample': 'Écouter un extrait',
+    'voiceTestIn10': 'Tester la voix du palier dans 10 secondes',
+    'latestMilestone': 'Aujourd\'hui',
     'aboutTitle': 'À propos et crédits',
     'aboutIntro':
         'Quiet Steps inclut des voix préenregistrées pour parler sans internet. Les voix Piper sont de rhasspy.',
@@ -927,6 +941,8 @@ const ui = {
     'voiceMale': 'Maschile',
     'voicePhone': 'Voce del telefono',
     'voicePlaySample': 'Ascolta un campione',
+    'voiceTestIn10': 'Prova la voce della tappa tra 10 secondi',
+    'latestMilestone': 'Oggi',
     'aboutTitle': 'Informazioni e crediti',
     'aboutIntro':
         'Quiet Steps include voci preregistrate per parlare senza internet. Le voci Piper sono di rhasspy.',

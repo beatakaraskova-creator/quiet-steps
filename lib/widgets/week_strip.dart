@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../l10n/streak_text.dart';
 import '../models/look_pack.dart';
 import '../services/step_math.dart';
+import '../services/store.dart';
 import '../services/streaks.dart';
 import 'glass_panel.dart';
 
@@ -67,6 +68,14 @@ class _WeekStripState extends State<WeekStrip> {
     if (selected.isRest) {
       caption = '${StreakText.restDay(lang)} · $caption';
     }
+    String restWarm = '';
+    if (selected.isRest) {
+      var style = 'calm';
+      try {
+        style = Store.instance.milestoneStyle;
+      } catch (_) {}
+      restWarm = StreakText.restDayLine(lang, style, selected.date);
+    }
 
     return GlassPanel(
       frosted: widget.frosted,
@@ -119,6 +128,16 @@ class _WeekStripState extends State<WeekStrip> {
               fontSize: 13 * widget.fontScale,
             ),
           ),
+          if (restWarm.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              restWarm,
+              style: TextStyle(
+                color: p.muted,
+                fontSize: 13 * widget.fontScale,
+              ),
+            ),
+          ],
         ],
       ),
     );

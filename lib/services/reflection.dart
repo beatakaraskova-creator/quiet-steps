@@ -1,5 +1,4 @@
-import 'dart:math';
-
+import '../l10n/day_pick.dart';
 import '../l10n/reflection_lines.dart';
 import '../l10n/streak_text.dart';
 import 'milestones.dart';
@@ -17,6 +16,7 @@ String reflectionGroup({required int steps, required int goal}) {
 String pickReflectionClosing({
   required String language,
   required String group,
+  DateTime? day,
   int Function(int max)? nextInt,
 }) {
   final lang = reflectionClosings.containsKey(language) ? language : 'en';
@@ -24,9 +24,10 @@ String pickReflectionClosing({
   if (lines == null || lines.isEmpty) {
     lines = reflectionClosings['en']?[group] ?? reflectionClosings['en']!['under']!;
   }
-  final pick = nextInt ?? Random().nextInt;
-  final i = pick(lines.length).clamp(0, lines.length - 1);
-  return lines[i];
+  if (nextInt != null) {
+    return lines[nextInt(lines.length).clamp(0, lines.length - 1)];
+  }
+  return lines[weekdayIndex(day ?? DateTime.now(), lines.length)];
 }
 
 String reflectionSummaryLine(String language, int steps) {
@@ -126,6 +127,7 @@ ReflectionCopy buildReflectionCopy({
     closing: pickReflectionClosing(
       language: language,
       group: group,
+      day: now,
       nextInt: nextInt,
     ),
     streak: reflectionStreakLine(

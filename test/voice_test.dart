@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quiet_steps/l10n/milestone_lines.dart';
+import 'package:quiet_steps/l10n/reflection_lines.dart';
 import 'package:quiet_steps/l10n/spoken_catalog.dart';
+import 'package:quiet_steps/l10n/walk_text.dart';
 import 'package:quiet_steps/l10n/ui_text.dart';
 import 'package:quiet_steps/screens/credits_screen.dart';
 import 'package:quiet_steps/screens/settings_screen.dart';
@@ -57,20 +60,20 @@ void main() {
       'assets/voices/sk/male/walk_move_0.ogg',
     );
     expect(
-      spokenIdForText('en', 'A gentle start. 2,500 steps.'),
-      'milestone_calm_2500_0',
+      spokenIdForText('en', milestoneLines['en']!['calm']!['2500']![1]),
+      'milestone_calm_2500_1',
     );
     expect(
-      spokenIdForText('en', 'Thank you for taking this time for yourself.'),
-      'walk_gratitude_0',
+      spokenIdForText('en', walkLines['en']!['gratitude']![1]),
+      'walk_gratitude_1',
     );
     expect(
       clipAssetForSpeak(
         language: 'en',
         voiceKind: 'female',
-        text: 'A gentle start. 2,500 steps.',
+        text: milestoneLines['en']!['calm']!['2500']![1],
       ),
-      'assets/voices/en/female/milestone_calm_2500_0.ogg',
+      'assets/voices/en/female/milestone_calm_2500_1.ogg',
     );
     expect(
       clipAssetForSpeak(
@@ -87,7 +90,7 @@ void main() {
       clipAssetForSpeak(
         language: 'en',
         voiceKind: 'phone',
-        text: 'A gentle start. 2,500 steps.',
+        text: milestoneLines['en']!['calm']!['2500']![1],
       ),
       isNull,
     );
@@ -95,7 +98,7 @@ void main() {
       clipAssetForSpeak(
         language: 'en',
         voiceKind: 'female',
-        text: 'A gentle start. 2,500 steps.',
+        text: milestoneLines['en']!['calm']!['2500']![1],
         exists: (_) => false,
       ),
       isNull,
@@ -114,7 +117,7 @@ void main() {
     expect(
       spokenIdForText(
         'en',
-        'Today you walked 4,218 steps. You reached your goal today. Let the evening be easy. 3 good days.',
+        'Today you walked 4,218 steps. ${reflectionClosings['en']!['met']![0]} 3 good days.',
       ),
       'reflection_met_0',
     );
@@ -149,7 +152,7 @@ void main() {
 
   testWidgets('settings voice chips and credits are on screen', (tester) async {
     await _boot();
-    tester.view.physicalSize = const Size(400, 2400);
+    tester.view.physicalSize = const Size(400, 2600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -165,6 +168,8 @@ void main() {
     expect(find.text(uiLine('en', 'voiceMale')), findsOneWidget);
     expect(find.text(uiLine('en', 'voicePhone')), findsOneWidget);
     expect(find.byKey(const ValueKey('voice-play-sample')), findsOneWidget);
+    expect(find.byKey(const ValueKey('voice-test-10s')), findsOneWidget);
+    expect(find.text(uiLine('en', 'voiceTestIn10')), findsOneWidget);
     expect(find.byKey(const ValueKey('settings-about')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('voice-kind-male')));

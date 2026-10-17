@@ -1,5 +1,4 @@
-import 'dart:math';
-
+import '../l10n/day_pick.dart';
 import '../l10n/walk_text.dart';
 import '../models/walk_entry.dart';
 
@@ -56,6 +55,7 @@ String walkMinutesLabel(String language, int n) {
 String pickWalkLine({
   required String language,
   required String mood,
+  DateTime? day,
   int Function(int max)? nextInt,
 }) {
   final lang = walkLines.containsKey(language) ? language : 'en';
@@ -63,9 +63,10 @@ String pickWalkLine({
   if (lines == null || lines.isEmpty) {
     lines = walkLines['en']?[mood] ?? walkLines['en']!['move']!;
   }
-  final pick = nextInt ?? Random().nextInt;
-  final i = pick(lines.length).clamp(0, lines.length - 1);
-  return lines[i];
+  if (nextInt != null) {
+    return lines[nextInt(lines.length).clamp(0, lines.length - 1)];
+  }
+  return lines[weekdayIndex(day ?? DateTime.now(), lines.length)];
 }
 
 String clipWalkNote(String raw) {

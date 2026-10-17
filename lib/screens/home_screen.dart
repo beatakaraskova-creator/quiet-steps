@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/easy_text.dart';
 import '../l10n/glance_text.dart';
+import '../l10n/greeting_lines.dart';
 import '../l10n/streak_text.dart';
 import '../l10n/ui_text.dart';
 import '../l10n/walk_text.dart';
@@ -154,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       end: end,
       carry: store.walkCarrySteps,
     );
-    final line = pickWalkLine(language: lang, mood: entry.mood);
+    final line = pickWalkLine(language: lang, mood: entry.mood, day: start);
     store.clearWalk();
     _stopWalkTimer();
     if (!mounted) return;
@@ -300,6 +301,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
               ),
             ),
+            ...[
+              const SizedBox(height: 16),
+              _milestoneCard(
+                language: lang,
+                line: _homeNote(store, lang),
+                photo: hasPhoto,
+              ),
+            ],
             const SizedBox(height: 20),
             WeekStrip(
               stepsByDate: _stepsByDate(store),
@@ -585,6 +594,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
+                        ...[
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: easyRingSize,
+                            child: Text(
+                              _homeNote(store, lang),
+                              key: const ValueKey('easy-milestone'),
+                              textAlign: TextAlign.center,
+                              maxLines: 5,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: pack.ink,
+                                fontSize: 18 * scale,
+                                height: 1.35,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                         if (engine.permissionDenied || engine.error != null) ...[
                           const SizedBox(height: 10),
                           SizedBox(
@@ -848,6 +876,57 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             onPressed: _endWalk,
             style: secondaryOutlineStyle(pack),
             child: Text(walkUiLine(language, 'end')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _homeNote(Store store, String lang) {
+    final milestone = store.todaysMilestoneLine();
+    if (milestone.isNotEmpty) return milestone;
+    return pickGreeting(
+      language: lang,
+      style: store.milestoneStyle,
+      now: DateTime.now(),
+    );
+  }
+
+  Widget _milestoneCard({
+    required String language,
+    required String line,
+    required bool photo,
+  }) {
+    final pack = Look.instance.pack;
+    final scale = Look.instance.fontScale;
+    return GlassPanel(
+      frosted: photo,
+      color: pack.card,
+      light: pack.light,
+      radius: 16,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            uiLine(language, 'latestMilestone'),
+            style: TextStyle(
+              color: pack.muted,
+              fontSize: 12 * scale,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            line,
+            key: const ValueKey('home-milestone'),
+            style: TextStyle(
+              color: pack.ink,
+              fontSize: 16 * scale,
+              height: 1.4,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

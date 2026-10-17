@@ -113,58 +113,58 @@ void main() {
     test('picks the line for that mood from its group', () {
       expect(
         pickWalkLine(language: 'en', mood: 'clear', nextInt: (_) => 0),
-        'Hopefully your mind feels a little lighter now.',
+        walkLines['en']!['clear']![0],
       );
       expect(
         pickWalkLine(language: 'en', mood: 'clear', nextInt: (_) => 1),
-        'Fresh air, clearer thoughts. Well done.',
+        walkLines['en']!['clear']![1],
       );
       expect(
         pickWalkLine(language: 'en', mood: 'gratitude', nextInt: (_) => 0),
-        'Thank you for taking this time for yourself.',
+        walkLines['en']!['gratitude']![0],
       );
       expect(
         pickWalkLine(language: 'en', mood: 'move', nextInt: (_) => 1),
-        "You moved. That's what matters.",
+        walkLines['en']!['move']![1],
       );
       expect(
         pickWalkLine(language: 'en', mood: 'slow', nextInt: (_) => 0),
-        'Gentle and unhurried. Just right.',
+        walkLines['en']!['slow']![0],
       );
       expect(
         pickWalkLine(language: 'en', mood: 'energy', nextInt: (_) => 1),
-        'Feel that energy? Well done!',
+        walkLines['en']!['energy']![1],
       );
     });
 
     test('unknown language falls back to English', () {
       expect(
         pickWalkLine(language: 'xx', mood: 'slow', nextInt: (_) => 1),
-        'You gave yourself some calm.',
+        walkLines['en']!['slow']![1],
       );
     });
 
     test('unknown mood falls back to just-move English', () {
       expect(
         pickWalkLine(language: 'en', mood: 'unknown', nextInt: (_) => 0),
-        'Every step counted. Nice work.',
+        walkLines['en']!['move']![0],
       );
     });
 
     test('Slovak line is used when language is sk', () {
       expect(
         pickWalkLine(language: 'sk', mood: 'move', nextInt: (_) => 0),
-        'Každý krok sa počítal. Pekná práca.',
+        walkLines['sk']!['move']![0],
       );
     });
 
-    test('every supported language has two lines per mood', () {
+    test('every supported language has seven lines per mood', () {
       for (final lang in supportedLanguages) {
         expect(walkLines[lang], isNotNull, reason: lang);
         for (final mood in walkMoodIds) {
           expect(
             walkLines[lang]![mood]?.length,
-            2,
+            7,
             reason: '$lang $mood',
           );
           expect(walkMoodLabels[lang]![mood], isNotEmpty);

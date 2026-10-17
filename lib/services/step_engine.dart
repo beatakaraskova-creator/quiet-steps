@@ -12,6 +12,7 @@ import 'milestone_alerts.dart';
 import 'step_math.dart';
 import 'step_task.dart';
 import 'store.dart';
+import 'voice.dart';
 
 class StepEngine extends ChangeNotifier {
   StepEngine._();
@@ -35,6 +36,8 @@ class StepEngine extends ChangeNotifier {
 
   Future<void> init() async {
     await Store.instance.init();
+    await rollOverIfNewDay(Store.instance);
+    unawaited(Voice.instance.prepare());
     AppLocale.instance.load();
     FlutterForegroundTask.initCommunicationPort();
     if (!_listeningTaskData) {
@@ -73,6 +76,10 @@ class StepEngine extends ChangeNotifier {
 
   Future<void> refreshFromDisk() async {
     await Store.instance.reload();
+    final rolled = await rollOverIfNewDay(Store.instance);
+    if (rolled) {
+      scheduleQuietStepsWidgetPush(force: true);
+    }
     notifyListeners();
   }
 

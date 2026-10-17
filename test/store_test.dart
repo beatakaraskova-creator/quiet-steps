@@ -58,6 +58,20 @@ void main() {
     expect(store.reflectionTime, '21:15');
   });
 
+  test('latest milestone line is for today only', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = Store.instance;
+    await store.init();
+    expect(store.todaysMilestoneLine(), isEmpty);
+    store.todayDate = '2026-10-16';
+    store.latestMilestoneLine = 'A gentle start. 2,500 steps.';
+    store.latestMilestoneDate = '2026-10-16';
+    expect(store.todaysMilestoneLine(), 'A gentle start. 2,500 steps.');
+    expect(store.todaysMilestoneLine('2026-10-17'), isEmpty);
+    store.clearLatestMilestone();
+    expect(store.todaysMilestoneLine(), isEmpty);
+  });
+
   test('big and simple defaults off and saves', () async {
     SharedPreferences.setMockInitialValues({});
     final store = Store.instance;

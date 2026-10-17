@@ -71,6 +71,33 @@ void main() {
     expect(await applyRawSteps(store, 1610), 110);
   });
 
+  test('rollover without a new step event zeroes today', () async {
+    await fresh();
+    await applyRawSteps(store, 1000);
+    await applyRawSteps(store, 1640);
+    expect(store.todaySteps, 640);
+    final yesterday = todayKey(DateTime.now().subtract(const Duration(days: 1)));
+    store.todayDate = yesterday;
+    store.firedMilestonesRaw = '$yesterday:2500,goal';
+    store.latestMilestoneLine = 'Goal reached. Be proud of this.';
+    store.latestMilestoneDate = yesterday;
+
+    expect(await rollOverIfNewDay(store), isTrue);
+    expect(store.todayDate, todayKey());
+    expect(store.todaySteps, 0);
+    expect(store.todayOffset, 1640);
+    expect(store.lastRaw, 1640);
+    expect(store.firedMilestonesRaw, isEmpty);
+    expect(store.todaysMilestoneLine(), isEmpty);
+    final hist = store.history();
+    expect(hist.first.date, yesterday);
+    expect(hist.first.steps, 640);
+
+    expect(await rollOverIfNewDay(store), isFalse);
+    expect(await applyRawSteps(store, 1640), 0);
+    expect(await applyRawSteps(store, 1655), 15);
+  });
+
   test('reset makes the next raw reading the new zero', () async {
     await fresh();
     await applyRawSteps(store, 2000);

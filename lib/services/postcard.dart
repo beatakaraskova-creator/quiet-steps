@@ -1,3 +1,4 @@
+import '../l10n/day_pick.dart';
 import '../l10n/postcard_text.dart';
 import '../models/walk_entry.dart';
 import 'step_math.dart';
@@ -104,8 +105,14 @@ String postcardUiLine(String language, String key) {
   return postcardUi[lang]?[key] ?? postcardUi['en']?[key] ?? key;
 }
 
-String postcardClosingLine(String language, String group) {
+/// Closing line for the postcard, picked by weekday from postcardDayLines
+/// (index 0 = Monday), falling back to the single postcardLines string.
+String postcardClosingLine(String language, String group, {DateTime? day}) {
   final lang = postcardLines.containsKey(language) ? language : 'en';
+  final days = postcardDayLines[lang]?[group] ?? postcardDayLines['en']?[group];
+  if (days != null && days.isNotEmpty) {
+    return days[weekdayIndex(day ?? DateTime.now(), days.length)];
+  }
   return postcardLines[lang]?[group] ??
       postcardLines['en']?[group] ??
       postcardLines['en']!['quiet']!;

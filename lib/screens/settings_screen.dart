@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -576,6 +577,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               style: secondaryOutlineStyle(p, padding: const EdgeInsets.symmetric(vertical: 12)),
               child: Text(uiLine(lang, 'voicePlaySample')),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              key: const ValueKey('voice-test-10s'),
+              onPressed: () {
+                final language = lang;
+                final speed = _voiceSpeed;
+                final style = _style;
+                final kind = _voiceKind;
+                final line = pickMilestoneLine(
+                  language: language,
+                  style: style,
+                  milestone: '2500',
+                  nextInt: (_) => 0,
+                );
+                Timer(const Duration(seconds: 10), () {
+                  Voice.instance.speak(
+                    text: line,
+                    language: language,
+                    speed: speed,
+                    style: style,
+                    voiceKind: kind,
+                  );
+                });
+              },
+              style: secondaryOutlineStyle(p, padding: const EdgeInsets.symmetric(vertical: 12)),
+              child: Text(uiLine(lang, 'voiceTestIn10')),
             ),
           ],
         ),

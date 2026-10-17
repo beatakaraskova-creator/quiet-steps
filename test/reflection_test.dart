@@ -19,7 +19,7 @@ void main() {
       expect(reflectionGroup(steps: 7999, goal: 8000), 'half');
       expect(
         pickReflectionClosing(language: 'en', group: 'half', nextInt: (_) => 0),
-        'You moved more than halfway today. That counts.',
+        reflectionClosings['en']!['half']![0],
       );
     });
 
@@ -28,14 +28,14 @@ void main() {
       expect(reflectionGroup(steps: 3999, goal: 8000), 'under');
       expect(
         pickReflectionClosing(language: 'en', group: 'under', nextInt: (_) => 1),
-        'Rest is part of walking. See you tomorrow.',
+        reflectionClosings['en']!['under']![1],
       );
     });
 
     test('unknown language falls back to English closings', () {
       expect(
         pickReflectionClosing(language: 'xx', group: 'met', nextInt: (_) => 2),
-        'Your steps added up nicely today.',
+        reflectionClosings['en']!['met']![2],
       );
       expect(
         reflectionSummaryLine('zz', 2500),

@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:ui' show PlatformDispatcher;
+import 'dart:ui' show DartPluginRegistrant, PlatformDispatcher;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:pedometer/pedometer.dart';
 
@@ -12,6 +13,7 @@ import 'milestones.dart';
 import 'reflection_alerts.dart';
 import 'step_math.dart';
 import 'store.dart';
+import 'voice.dart';
 
 @pragma('vm:entry-point')
 void stepTaskCallback() {
@@ -26,9 +28,12 @@ class StepTaskHandler extends TaskHandler {
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
+    DartPluginRegistrant.ensureInitialized();
     await Store.instance.init();
+    await rollOverIfNewDay(Store.instance);
     await MilestoneAlerts.instance.init();
     await ReflectionAlerts.instance.init();
+    await Voice.instance.prepare();
     _listen();
   }
 
@@ -59,14 +64,24 @@ class StepTaskHandler extends TaskHandler {
 
   @override
   void onRepeatEvent(DateTime timestamp) {
-    final steps = Store.instance.todaySteps;
-    FlutterForegroundTask.updateService(
-      notificationTitle: uiLine(_lang(), 'appName'),
-      notificationText: _notice(steps),
-    );
-    FlutterForegroundTask.sendDataToMain(steps);
-    scheduleQuietStepsWidgetPush();
-    unawaited(ReflectionAlerts.instance.maybeFire(Store.instance));
+    unawaited(_onRepeat());
+  }
+
+  Future<void> _onRepeat() async {
+    try {
+      await Store.instance.reload();
+      final rolled = await rollOverIfNewDay(Store.instance);
+      final steps = Store.instance.todaySteps;
+      await FlutterForegroundTask.updateService(
+        notificationTitle: uiLine(_lang(), 'appName'),
+        notificationText: _notice(steps),
+      );
+      FlutterForegroundTask.sendDataToMain(steps);
+      scheduleQuietStepsWidgetPush(force: rolled);
+      unawaited(ReflectionAlerts.instance.maybeFire(Store.instance));
+    } catch (e, st) {
+      debugPrint('step_task_repeat_failed:$e\n$st');
+    }
   }
 
   @override

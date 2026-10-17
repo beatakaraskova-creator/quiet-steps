@@ -1,4 +1,5 @@
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
@@ -15,6 +16,22 @@ class Voice {
   FlutterTts? _tts;
   AudioPlayer? _player;
   bool _sessionReady = false;
+
+  /// Create the audio session and players in the current isolate
+  /// (UI isolate and the foreground-task isolate each need their own).
+  Future<void> prepare() async {
+    await _ensureSession();
+    try {
+      _player ??= AudioPlayer();
+    } catch (e, st) {
+      debugPrint('voice_player_init_failed:$e\n$st');
+    }
+    try {
+      _tts ??= FlutterTts();
+    } catch (e, st) {
+      debugPrint('voice_tts_init_failed:$e\n$st');
+    }
+  }
 
   Future<void> speak({
     required String text,
@@ -69,6 +86,12 @@ class Voice {
     }
     try {
       await _ensureSession();
+      try {
+        final session = await AudioSession.instance;
+        await session.setActive(true);
+      } catch (e, st) {
+        debugPrint('voice_session_activate_failed:$e\n$st');
+      }
       _player ??= AudioPlayer();
       await _player!.stop();
       await _player!.setAsset(asset);
@@ -76,7 +99,8 @@ class Voice {
       await _player!.setVolume(1);
       await _player!.play();
       return true;
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('voice_clip_failed:$asset:$e\n$st');
       return false;
     }
   }
@@ -105,7 +129,10 @@ class Voice {
         ),
       );
       _sessionReady = true;
-    } catch (_) {}
+      await session.setActive(true);
+    } catch (e, st) {
+      debugPrint('voice_audio_session_failed:$e\n$st');
+    }
   }
 
   Future<void> _speakTts(
@@ -128,7 +155,9 @@ class Voice {
       await _tts!.setSpeechRate(speed == 'slow' ? 0.35 : 0.5);
       await _tts!.setPitch(style == 'cheerful' ? 1.08 : 0.96);
       await _tts!.speak(text);
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('voice_tts_failed:$e\n$st');
+    }
   }
 
   bool _langOk(dynamic value) {

@@ -176,7 +176,7 @@ void main() {
   group('copy', () {
     test('falls back to English', () {
       expect(StreakText.goodDays('xx', 5), '5 good days');
-      expect(StreakText.freshStart('zz'), 'A fresh start today.');
+      expect(StreakText.freshStart('zz'), 'A fresh start today, and that is a lovely place to begin.');
       expect(StreakText.restDay('nope'), 'Rest day');
       expect(StreakText.thisWeek(''), 'This week');
       expect(StreakText.steps('xx', 2500), '2,500 steps');
@@ -187,7 +187,7 @@ void main() {
       expect(StreakText.goodDays('sk', 1), '1 dobrý deň');
       expect(StreakText.goodDays('cs', 3), '3 dobré dny');
       expect(StreakText.restDay('de'), 'Ruhetag');
-      expect(StreakText.freshStart('fr'), "Un nouveau départ aujourd'hui.");
+      expect(StreakText.freshStart('fr'), "Aujourd'hui est un nouveau départ, et c'est un beau moment pour commencer.");
       expect(StreakText.thisWeek('it'), 'Questa settimana');
     });
   });

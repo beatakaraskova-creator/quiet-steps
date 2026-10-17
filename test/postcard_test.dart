@@ -126,31 +126,31 @@ void main() {
         'mostly',
       );
       expect(
-        postcardClosingLine('en', 'mostly'),
-        'A month of steady steps. Be proud.',
+        postcardClosingLine('en', 'mostly', day: DateTime(2026, 10, 20)),
+        postcardLines['en']!['mostly'],
       );
     });
 
     test('some when there are good days but fewer than half', () {
       expect(postcardLineGroup(goodDays: 5, elapsedDays: 14), 'some');
       expect(
-        postcardClosingLine('en', 'some'),
-        'Step by step, you showed up.',
+        postcardClosingLine('en', 'some', day: DateTime(2026, 10, 20)),
+        postcardLines['en']!['some'],
       );
     });
 
     test('quiet when there are no good days', () {
       expect(postcardLineGroup(goodDays: 0, elapsedDays: 14), 'quiet');
       expect(
-        postcardClosingLine('en', 'quiet'),
-        'Every step this month still counted.',
+        postcardClosingLine('en', 'quiet', day: DateTime(2026, 10, 20)),
+        postcardLines['en']!['quiet'],
       );
     });
 
     test('unknown language falls back to English', () {
       expect(
-        postcardClosingLine('xx', 'quiet'),
-        'Every step this month still counted.',
+        postcardClosingLine('xx', 'quiet', day: DateTime(2026, 10, 25)),
+        postcardDayLines['en']!['quiet']![6],
       );
     });
 

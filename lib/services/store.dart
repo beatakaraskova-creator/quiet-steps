@@ -49,6 +49,8 @@ class Store {
   static const _kBigSimple = 'big_simple';
   static const _kVoiceKind = 'voice_kind';
   static const _kWalkCarry = 'walk_carry_steps';
+  static const _kLatestMilestoneLine = 'latest_milestone_line';
+  static const _kLatestMilestoneDate = 'latest_milestone_date';
 
   late SharedPreferences _p;
 
@@ -179,6 +181,24 @@ class Store {
 
   bool get bigSimple => _p.getBool(_kBigSimple) ?? false;
   set bigSimple(bool v) => _p.setBool(_kBigSimple, v);
+
+  String get latestMilestoneLine => _p.getString(_kLatestMilestoneLine) ?? '';
+  set latestMilestoneLine(String v) => _p.setString(_kLatestMilestoneLine, v);
+
+  String get latestMilestoneDate => _p.getString(_kLatestMilestoneDate) ?? '';
+  set latestMilestoneDate(String v) => _p.setString(_kLatestMilestoneDate, v);
+
+  /// Today's milestone card text, or empty when it belongs to another day.
+  String todaysMilestoneLine([String? today]) {
+    final date = today ?? todayDate;
+    if (date.isEmpty || latestMilestoneDate != date) return '';
+    return latestMilestoneLine.trim();
+  }
+
+  void clearLatestMilestone() {
+    latestMilestoneLine = '';
+    latestMilestoneDate = '';
+  }
 
   List<DayRecord> history() {
     final raw = _p.getString(_kHistory);
