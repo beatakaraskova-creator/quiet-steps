@@ -51,6 +51,12 @@ class Store {
   static const _kWalkCarry = 'walk_carry_steps';
   static const _kLatestMilestoneLine = 'latest_milestone_line';
   static const _kLatestMilestoneDate = 'latest_milestone_date';
+  static const _kLatestMilestoneKey = 'latest_milestone_key';
+  static const _kLatestMilestoneLang = 'latest_milestone_lang';
+  static const _kLatestMilestoneAtMs = 'latest_milestone_at_ms';
+  static const _kLatestMilestoneLive = 'latest_milestone_live';
+  static const _kMilestoneSeen = 'latest_milestone_seen';
+  static const _kMilestoneTune = 'milestone_tune';
 
   late SharedPreferences _p;
 
@@ -198,7 +204,52 @@ class Store {
   void clearLatestMilestone() {
     latestMilestoneLine = '';
     latestMilestoneDate = '';
+    _p.remove(_kLatestMilestoneKey);
+    _p.remove(_kLatestMilestoneLang);
+    _p.remove(_kLatestMilestoneAtMs);
+    _p.remove(_kLatestMilestoneLive);
   }
+
+  /// Milestone id of the latest line (`5000`, `goal`, `12500`, ...).
+  String get latestMilestoneKey => _p.getString(_kLatestMilestoneKey) ?? '';
+
+  /// Language the latest line was picked in.
+  String get latestMilestoneLang => _p.getString(_kLatestMilestoneLang) ?? '';
+
+  /// When the latest milestone fired (ms since epoch), 0 when unknown.
+  int get latestMilestoneAtMs => _p.getInt(_kLatestMilestoneAtMs) ?? 0;
+
+  /// True when the app screen was in the foreground as it fired, so the
+  /// background task left the voice to the app.
+  bool get latestMilestoneLive => _p.getBool(_kLatestMilestoneLive) ?? false;
+
+  /// Save a fired milestone and wait until it is written, so the other
+  /// isolate sees it after a reload.
+  Future<void> recordMilestone({
+    required String date,
+    required String key,
+    required String line,
+    required String language,
+    required bool live,
+    DateTime? at,
+  }) async {
+    await Future.wait([
+      _p.setString(_kLatestMilestoneLine, line),
+      _p.setString(_kLatestMilestoneDate, date),
+      _p.setString(_kLatestMilestoneKey, key),
+      _p.setString(_kLatestMilestoneLang, language),
+      _p.setInt(_kLatestMilestoneAtMs, (at ?? DateTime.now()).millisecondsSinceEpoch),
+      _p.setBool(_kLatestMilestoneLive, live),
+    ]);
+  }
+
+  /// `date|key` of the last milestone shown in the pop-up.
+  String get milestoneSeen => _p.getString(_kMilestoneSeen) ?? '';
+  set milestoneSeen(String v) => _p.setString(_kMilestoneSeen, v);
+
+  /// Short tune when the milestone pop-up appears. On by default.
+  bool get milestoneTune => _p.getBool(_kMilestoneTune) ?? true;
+  set milestoneTune(bool v) => _p.setBool(_kMilestoneTune, v);
 
   List<DayRecord> history() {
     final raw = _p.getString(_kHistory);

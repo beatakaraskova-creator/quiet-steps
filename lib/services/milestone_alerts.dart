@@ -21,6 +21,54 @@ class MilestoneAlerts {
       FlutterLocalNotificationsPlugin();
   bool _inited = false;
 
+  /// Last heartbeat from the app screen (set in the background task isolate).
+  DateTime? uiSeenAt;
+
+  /// Whether the app screen is open right now. In the app isolate
+  /// [AppPresence] replaces this with the real lifecycle state; in the
+  /// background task it follows the heartbeats sent by the app.
+  bool Function() uiInForeground = _noScreen;
+
+  /// Speaks a line. Swappable in tests.
+  Future<void> Function({
+    required String text,
+    required String language,
+    required String speed,
+    required String style,
+    required String voiceKind,
+  }) speak = _speakWithVoice;
+
+  static bool _noScreen() => false;
+
+  static Future<void> _speakWithVoice({
+    required String text,
+    required String language,
+    required String speed,
+    required String style,
+    required String voiceKind,
+  }) =>
+      Voice.instance.speak(
+        text: text,
+        language: language,
+        speed: speed,
+        style: style,
+        voiceKind: voiceKind,
+      );
+
+  /// Heartbeat handling in the background task.
+  void onUiCommand(Object data, {DateTime? now, Duration timeout = const Duration(seconds: 40)}) {
+    if (data == 'uiForeground') {
+      uiSeenAt = now ?? DateTime.now();
+      uiInForeground = () {
+        final seen = uiSeenAt;
+        return seen != null && DateTime.now().difference(seen) <= timeout;
+      };
+    } else if (data == 'uiBackground') {
+      uiSeenAt = null;
+      uiInForeground = _noScreen;
+    }
+  }
+
   String _copyLang() {
     try {
       return resolveLanguage(
@@ -61,13 +109,17 @@ class MilestoneAlerts {
     } catch (_) {}
   }
 
-  Future<void> onStepsUpdated(
+  /// Returns the milestone ids that fired (empty when none).
+  /// When the app screen is open the notification is still posted, but the
+  /// voice is left to the app (pop-up: tune, then voice), so nothing is
+  /// spoken twice.
+  Future<List<String>> onStepsUpdated(
     Store store,
     int previous,
     int current,
   ) async {
-    if (!store.milestoneMessages) return;
-    if (current <= previous) return;
+    if (!store.milestoneMessages) return const [];
+    if (current <= previous) return const [];
 
     final date = store.todayDate.isEmpty ? todayKey() : store.todayDate;
     final fired = firedKeysForDate(store.firedMilestonesRaw, date);
@@ -77,7 +129,7 @@ class MilestoneAlerts {
       goal: store.goal,
       alreadyFired: fired,
     );
-    if (keys.isEmpty) return;
+    if (keys.isEmpty) return const [];
 
     final language = resolveLanguage(
       stored: store.language,
@@ -91,6 +143,11 @@ class MilestoneAlerts {
           end: store.quietEnd,
           now: DateTime.now(),
         );
+
+    var screenOpen = false;
+    try {
+      screenOpen = uiInForeground();
+    } catch (_) {}
 
     await init();
 
@@ -107,19 +164,27 @@ class MilestoneAlerts {
         offset: offset,
       );
       if (line.isEmpty) continue;
-      store.latestMilestoneLine = line;
-      store.latestMilestoneDate = date;
-      await _show(line, key, silent: quiet);
-      if (!quiet && store.speakMessages) {
-        await Voice.instance.speak(
-          text: line,
-          language: language,
-          speed: store.voiceSpeed,
-          style: style,
-          voiceKind: store.voiceKind,
-        );
+      await store.recordMilestone(
+        date: date,
+        key: key,
+        line: line,
+        language: language,
+        live: screenOpen,
+      );
+      await _show(line, key, silent: quiet || screenOpen);
+      if (!quiet && !screenOpen && store.speakMessages) {
+        try {
+          await speak(
+            text: line,
+            language: language,
+            speed: store.voiceSpeed,
+            style: style,
+            voiceKind: store.voiceKind,
+          );
+        } catch (_) {}
       }
     }
+    return keys;
   }
 
   Future<void> _show(String line, String key, {required bool silent}) async {

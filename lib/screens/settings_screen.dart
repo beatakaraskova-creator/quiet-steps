@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../l10n/easy_text.dart';
+import '../l10n/popup_text.dart';
 import '../l10n/ui_text.dart';
 import '../models/look_pack.dart';
 import '../services/app_locale.dart';
@@ -40,6 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late String _language;
   late bool _milestoneOn;
   late bool _speakOn;
+  late bool _tuneOn;
   late String _voiceSpeed;
   late String _voiceKind;
   late String _style;
@@ -61,6 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _language = s.language;
     _milestoneOn = s.milestoneMessages;
     _speakOn = s.speakMessages;
+    _tuneOn = s.milestoneTune;
     _voiceSpeed = s.voiceSpeed;
     _voiceKind = s.voiceKind;
     _style = s.milestoneStyle;
@@ -108,6 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     AppLocale.instance.load();
     s.milestoneMessages = _milestoneOn;
     s.speakMessages = _speakOn;
+    s.milestoneTune = _tuneOn;
     s.voiceSpeed = _voiceSpeed;
     s.voiceKind = _voiceKind;
     s.milestoneStyle = _style;
@@ -368,6 +372,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _language = s.language;
     _milestoneOn = s.milestoneMessages;
     _speakOn = s.speakMessages;
+    _tuneOn = s.milestoneTune;
     _voiceSpeed = s.voiceSpeed;
     _voiceKind = s.voiceKind;
     _style = s.milestoneStyle;
@@ -457,6 +462,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _milestoneOn,
             (v) => _touchMilestone(() => _milestoneOn = v),
             p,
+          ),
+          _switchTile(
+            popupLine(lang, 'tune'),
+            _tuneOn,
+            (v) => _touchMilestone(() => _tuneOn = v),
+            p,
+            subtitle: popupLine(lang, 'tuneHint'),
+            tileKey: const ValueKey('settings-milestone-tune'),
           ),
           _switchTile(
             uiLine(lang, 'speakMessages'),

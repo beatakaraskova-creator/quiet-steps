@@ -10,7 +10,7 @@ import 'streaks.dart';
 import 'walks.dart';
 
 const backupFormatVersion = 1;
-const quietStepsAppVersion = '1.0.1';
+const quietStepsAppVersion = '1.0.2';
 const maxDaySteps = 1000000;
 const maxBackupDays = 400;
 
@@ -42,6 +42,7 @@ class BackupSettings {
     required this.onboardingDone,
     required this.firedMilestonesRaw,
     required this.bigSimple,
+    this.milestoneTune = true,
   });
 
   final int goal;
@@ -65,6 +66,7 @@ class BackupSettings {
   final bool onboardingDone;
   final String firedMilestonesRaw;
   final bool bigSimple;
+  final bool milestoneTune;
 
   Map<String, dynamic> toJson() => {
         'goal': goal,
@@ -88,6 +90,7 @@ class BackupSettings {
         'onboardingDone': onboardingDone,
         'firedMilestones': firedMilestonesRaw,
         'bigSimple': bigSimple,
+        'milestoneTune': milestoneTune,
       };
 
   static BackupSettings defaults() => const BackupSettings(
@@ -247,6 +250,7 @@ BackupSnapshot snapshotFromStore(
       onboardingDone: store.onboardingDone,
       firedMilestonesRaw: store.firedMilestonesRaw,
       bigSimple: store.bigSimple,
+      milestoneTune: store.milestoneTune,
     ),
   );
 }
@@ -518,6 +522,7 @@ BackupSettings? _parseSettings(Map<String, dynamic> raw) {
     onboardingDone: b('onboardingDone', d.onboardingDone),
     firedMilestonesRaw: fired,
     bigSimple: b('bigSimple', d.bigSimple),
+    milestoneTune: b('milestoneTune', d.milestoneTune),
   );
 }
 
@@ -638,6 +643,7 @@ void _writeSettings(Store store, BackupSettings s) {
   store.onboardingDone = s.onboardingDone;
   store.firedMilestonesRaw = s.firedMilestonesRaw;
   store.bigSimple = s.bigSimple;
+  store.milestoneTune = s.milestoneTune;
 }
 
 bool backupJsonLooksPrivate(String json) {

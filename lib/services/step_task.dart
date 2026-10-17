@@ -51,11 +51,13 @@ class StepTaskHandler extends TaskHandler {
           );
           FlutterForegroundTask.sendDataToMain(steps);
           scheduleQuietStepsWidgetPush();
-          await MilestoneAlerts.instance.onStepsUpdated(
+          final fired = await MilestoneAlerts.instance.onStepsUpdated(
             store,
             previous,
             steps,
           );
+          // Written and flushed: let the open app show the pop-up now.
+          if (fired.isNotEmpty) FlutterForegroundTask.sendDataToMain(steps);
         },
         onError: (_) {},
       );
@@ -90,6 +92,8 @@ class StepTaskHandler extends TaskHandler {
       unawaited(_resetToday());
     } else if (data == reloadPrefsCommand) {
       unawaited(Store.instance.reload());
+    } else {
+      MilestoneAlerts.instance.onUiCommand(data);
     }
   }
 

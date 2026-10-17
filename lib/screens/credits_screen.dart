@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/popup_text.dart';
 import '../l10n/ui_text.dart';
 import '../services/app_locale.dart';
 import '../services/look.dart';
@@ -39,6 +40,12 @@ class CreditsScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   uiLine(lang, 'aboutVoices'),
+                  style: TextStyle(color: p.muted, height: 1.5, fontSize: 14),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  popupLine(lang, 'fontCredit'),
+                  key: const ValueKey('credits-font'),
                   style: TextStyle(color: p.muted, height: 1.5, fontSize: 14),
                 ),
               ],

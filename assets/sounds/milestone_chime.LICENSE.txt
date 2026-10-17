@@ -1,0 +1,8 @@
+milestone_chime.ogg — Quiet Steps milestone tune
+
+Original work, generated from scratch by tool/make_chime.py (pure synthesis:
+sine tones, envelopes and a small comb-filter room). No samples, loops or
+third-party recordings are used, so no outside licence applies. It is part of
+Quiet Steps and may be used under the same terms as the app.
+
+Regenerate:  python tool/make_chime.py   (numpy; ffmpeg for the .ogg)

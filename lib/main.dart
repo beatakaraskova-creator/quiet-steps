@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -6,6 +7,7 @@ import 'screens/home_screen.dart';
 import 'screens/language_picker_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/app_locale.dart';
+import 'services/app_presence.dart';
 import 'services/easy_mode.dart';
 import 'services/glance.dart';
 import 'services/look.dart';
@@ -16,11 +18,16 @@ import 'services/store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    final text = await rootBundle.loadString('assets/fonts/OFL-NotoSerif.txt');
+    yield LicenseEntryWithLineBreaks(const ['NotoSerif'], text);
+  });
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   for (final lang in supportedLanguages) {
     await initializeDateFormatting(lang);
   }
   await StepEngine.instance.init();
+  AppPresence.instance.start();
   AppLocale.instance.load();
   await Look.instance.load();
   await pushQuietStepsWidget(force: true);

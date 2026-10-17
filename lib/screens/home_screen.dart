@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../l10n/easy_text.dart';
 import '../l10n/glance_text.dart';
 import '../l10n/greeting_lines.dart';
+import '../l10n/popup_text.dart';
 import '../l10n/streak_text.dart';
 import '../l10n/ui_text.dart';
 import '../l10n/walk_text.dart';
@@ -16,6 +17,8 @@ import '../services/format.dart';
 import '../services/glance.dart';
 import '../services/postcard.dart';
 import '../services/look.dart';
+import '../services/milestone_moments.dart';
+import '../services/milestone_sound.dart';
 import '../services/reflection.dart';
 import '../services/reflection_alerts.dart';
 import '../services/step_engine.dart';
@@ -23,6 +26,7 @@ import '../services/step_math.dart';
 import '../services/store.dart';
 import '../services/walks.dart';
 import '../widgets/glass_panel.dart';
+import '../widgets/milestone_popup.dart';
 import '../widgets/step_ring.dart';
 import '../widgets/week_strip.dart';
 import 'history_screen.dart';
@@ -43,6 +47,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final engine = StepEngine.instance;
   Timer? _walkTimer;
+  bool _popupOpen = false;
+  bool _checkQueued = false;
+  final _popupClose = ValueNotifier<int>(0);
 
   @override
   void initState() {
@@ -52,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     Look.instance.addListener(_tick);
     AppLocale.instance.addListener(_tick);
     if (Store.instance.walkActive) _ensureWalkTimer();
+    _queueMilestoneCheck();
   }
 
   @override
@@ -61,19 +69,86 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     Look.instance.removeListener(_tick);
     AppLocale.instance.removeListener(_tick);
     _stopWalkTimer();
+    _popupClose.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      engine.refreshFromDisk();
+      engine.refreshFromDisk().then((_) => _queueMilestoneCheck());
       ReflectionAlerts.instance.maybeFire(Store.instance);
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      // Leaving the app closes the pop-up and stops its sound.
+      if (_popupOpen) {
+        _popupClose.value++;
+        MilestoneSound.instance.stop();
+      }
     }
   }
 
   void _tick() {
     if (mounted) setState(() {});
+    _queueMilestoneCheck();
+  }
+
+  /// Check for an unseen milestone after this frame (Home must be on top).
+  void _queueMilestoneCheck() {
+    if (_checkQueued) return;
+    _checkQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkQueued = false;
+      _showPendingMilestone();
+    });
+  }
+
+  /// Milestone fired while the app is open: pop-up, tune, then voice.
+  /// Fired while closed and not seen yet: the latest one, once, on next open.
+  Future<void> _showPendingMilestone() async {
+    if (!mounted || _popupOpen) return;
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) return;
+    final state = WidgetsBinding.instance.lifecycleState;
+    if (state != null && state != AppLifecycleState.resumed) return;
+    final store = Store.instance;
+    final lang = _language();
+    final moment = pendingMilestoneMoment(store, language: lang);
+    if (moment == null) return;
+    markMilestoneSeen(store, moment);
+    _popupOpen = true;
+    unawaited(MilestoneSound.instance.playFor(moment, store));
+    await showMilestonePopup(
+      context,
+      language: lang,
+      label: milestonePopupLabel(lang, moment.key),
+      line: moment.line,
+      closeSignal: _popupClose,
+    );
+    _popupOpen = false;
+    await MilestoneSound.instance.stop();
+    if (mounted) _queueMilestoneCheck();
+  }
+
+  /// Tap the step ring to read today's message again, silently.
+  /// Before the first milestone of the day it shows the greeting instead.
+  Future<void> _reopenMessage(Store store, String lang) async {
+    if (_popupOpen) return;
+    final line = _homeNote(store, lang);
+    if (line.isEmpty) return;
+    final hasMilestone = store.todaysMilestoneLine().isNotEmpty;
+    final key = store.latestMilestoneKey;
+    _popupOpen = true;
+    await showMilestonePopup(
+      context,
+      language: lang,
+      label: hasMilestone && key.isNotEmpty
+          ? milestonePopupLabel(lang, key)
+          : popupLine(lang, 'today'),
+      line: line,
+      closeSignal: _popupClose,
+    );
+    _popupOpen = false;
   }
 
   String _language() => currentLanguage();
@@ -176,6 +251,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    // Depending on the route makes Home rebuild when it is on top again
+    // (back from Settings, History, ...), so a waiting pop-up shows then.
+    if (ModalRoute.of(context)?.isCurrent ?? true) _queueMilestoneCheck();
     final store = Store.instance;
     final look = Look.instance.pack;
     final scale = Look.instance.fontScale;
@@ -265,6 +343,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           children: [
             const SizedBox(height: 12),
             Center(
+              child: GestureDetector(
+              key: const ValueKey('ring-tap'),
+              onTap: () => _reopenMessage(store, lang),
               child: StepRing(
                 steps: steps,
                 goal: goal,
@@ -300,15 +381,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-            ),
-            ...[
-              const SizedBox(height: 16),
-              _milestoneCard(
-                language: lang,
-                line: _homeNote(store, lang),
-                photo: hasPhoto,
               ),
-            ],
+            ),
             const SizedBox(height: 20),
             WeekStrip(
               stepsByDate: _stepsByDate(store),
@@ -553,7 +627,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        StepRing(
+                        GestureDetector(
+                          key: const ValueKey('easy-ring-tap'),
+                          onTap: () => _reopenMessage(store, lang),
+                          child: StepRing(
                           steps: steps,
                           goal: goal,
                           track: pack.line,
@@ -577,6 +654,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
+                        ),
                         const SizedBox(height: 16),
                         SizedBox(
                           width: easyRingSize,
@@ -594,25 +672,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
-                        ...[
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            width: easyRingSize,
-                            child: Text(
-                              _homeNote(store, lang),
-                              key: const ValueKey('easy-milestone'),
-                              textAlign: TextAlign.center,
-                              maxLines: 5,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: pack.ink,
-                                fontSize: 18 * scale,
-                                height: 1.35,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
                         if (engine.permissionDenied || engine.error != null) ...[
                           const SizedBox(height: 10),
                           SizedBox(
@@ -889,47 +948,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       language: lang,
       style: store.milestoneStyle,
       now: DateTime.now(),
-    );
-  }
-
-  Widget _milestoneCard({
-    required String language,
-    required String line,
-    required bool photo,
-  }) {
-    final pack = Look.instance.pack;
-    final scale = Look.instance.fontScale;
-    return GlassPanel(
-      frosted: photo,
-      color: pack.card,
-      light: pack.light,
-      radius: 16,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            uiLine(language, 'latestMilestone'),
-            style: TextStyle(
-              color: pack.muted,
-              fontSize: 12 * scale,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            line,
-            key: const ValueKey('home-milestone'),
-            style: TextStyle(
-              color: pack.ink,
-              fontSize: 16 * scale,
-              height: 1.4,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

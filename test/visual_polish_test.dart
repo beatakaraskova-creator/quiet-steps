@@ -150,21 +150,24 @@ void main() {
       expect(find.text(glanceGoalReached('en')), findsOneWidget);
     });
 
-    testWidgets('shows today\'s milestone line on a calm card', (tester) async {
+    testWidgets('no Today card under the ring, even with a milestone today', (
+      tester,
+    ) async {
       await _boot();
       final line = milestoneLines['en']!['calm']!['2500']![0];
       Store.instance.latestMilestoneLine = line;
       Store.instance.latestMilestoneDate = Store.instance.todayDate;
       await _pumpPage(tester, const HomeScreen());
-      expect(find.byKey(const ValueKey('home-milestone')), findsOneWidget);
-      expect(find.text(line), findsOneWidget);
+      expect(find.byKey(const ValueKey('home-milestone')), findsNothing);
+      expect(find.text(line), findsNothing);
     });
 
-    testWidgets('shows a greeting before the first milestone', (tester) async {
+    testWidgets('no greeting card before the first milestone', (tester) async {
       await _boot();
       Store.instance.clearLatestMilestone();
       await _pumpPage(tester, const HomeScreen());
-      expect(find.byKey(const ValueKey('home-milestone')), findsOneWidget);
+      expect(find.byKey(const ValueKey('home-milestone')), findsNothing);
+      expect(find.byKey(const ValueKey('easy-milestone')), findsNothing);
     });
 
     testWidgets('km uses a comma in Slovak', (tester) async {
