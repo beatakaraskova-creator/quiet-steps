@@ -10,7 +10,7 @@ import 'streaks.dart';
 import 'walks.dart';
 
 const backupFormatVersion = 1;
-const quietStepsAppVersion = '1.0.2';
+const quietStepsAppVersion = '1.0.3';
 const maxDaySteps = 1000000;
 const maxBackupDays = 400;
 

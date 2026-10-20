@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Quiet Steps is offline. Release builds never carry INTERNET, even if a
+         library adds it. Debug builds keep it for hot reload (src/debug). -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+</manifest>

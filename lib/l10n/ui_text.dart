@@ -40,6 +40,10 @@ const ui = {
     'voiceTestIn10': 'Test milestone voice in 10 seconds',
     'latestMilestone': 'Today',
     'aboutTitle': 'About & credits',
+    'privacyTitle': 'Privacy policy',
+    'privacyHint': 'Read it in any browser at this address:',
+    'privacyCopy': 'Copy link',
+    'privacyCopied': 'Link copied',
     'aboutIntro':
         'Quiet Steps includes pre-recorded voices so it can speak without the internet. Piper voices are by rhasspy.',
     'aboutVoices':
@@ -170,6 +174,10 @@ const ui = {
     'voiceTestIn10': 'Vyskúšať hlas míľnika o 10 sekúnd',
     'latestMilestone': 'Dnes',
     'aboutTitle': 'O aplikácii a poďakovania',
+    'privacyTitle': 'Zásady ochrany súkromia',
+    'privacyHint': 'Prečítajte si ich v ľubovoľnom prehliadači na tejto adrese:',
+    'privacyCopy': 'Kopírovať odkaz',
+    'privacyCopied': 'Odkaz skopírovaný',
     'aboutIntro':
         'Quiet Steps obsahuje vopred nahraté hlasy, aby mohol hovoriť bez internetu. Hlasy Piper sú od rhasspy.',
     'aboutVoices':
@@ -299,6 +307,10 @@ const ui = {
     'voiceTestIn10': 'Vyzkoušet hlas milníku za 10 sekund',
     'latestMilestone': 'Dnes',
     'aboutTitle': 'O aplikaci a poděkování',
+    'privacyTitle': 'Zásady ochrany soukromí',
+    'privacyHint': 'Přečtěte si je v libovolném prohlížeči na této adrese:',
+    'privacyCopy': 'Kopírovat odkaz',
+    'privacyCopied': 'Odkaz zkopírován',
     'aboutIntro':
         'Quiet Steps obsahuje předem nahrané hlasy, aby mohl mluvit bez internetu. Hlasy Piper jsou od rhasspy.',
     'aboutVoices':
@@ -428,6 +440,10 @@ const ui = {
     'voiceTestIn10': 'Przetestuj głos kamienia milowego za 10 sekund',
     'latestMilestone': 'Dziś',
     'aboutTitle': 'O aplikacji i podziękowania',
+    'privacyTitle': 'Polityka prywatności',
+    'privacyHint': 'Przeczytasz ją w dowolnej przeglądarce pod tym adresem:',
+    'privacyCopy': 'Kopiuj link',
+    'privacyCopied': 'Link skopiowany',
     'aboutIntro':
         'Quiet Steps zawiera nagrane wcześniej głosy, żeby mówić bez internetu. Głosy Piper pochodzą od rhasspy.',
     'aboutVoices':
@@ -557,6 +573,10 @@ const ui = {
     'voiceTestIn10': 'Meilenstein-Stimme in 10 Sekunden testen',
     'latestMilestone': 'Heute',
     'aboutTitle': 'Über die App und Danksagung',
+    'privacyTitle': 'Datenschutzerklärung',
+    'privacyHint': 'Sie können sie in jedem Browser unter dieser Adresse lesen:',
+    'privacyCopy': 'Link kopieren',
+    'privacyCopied': 'Link kopiert',
     'aboutIntro':
         'Quiet Steps enthält vorab aufgenommene Stimmen und spricht ohne Internet. Piper-Stimmen stammen von rhasspy.',
     'aboutVoices':
@@ -686,6 +706,10 @@ const ui = {
     'voiceTestIn10': 'Probar la voz del hito en 10 segundos',
     'latestMilestone': 'Hoy',
     'aboutTitle': 'Acerca de y créditos',
+    'privacyTitle': 'Política de privacidad',
+    'privacyHint': 'Puedes leerla en cualquier navegador en esta dirección:',
+    'privacyCopy': 'Copiar enlace',
+    'privacyCopied': 'Enlace copiado',
     'aboutIntro':
         'Quiet Steps incluye voces grabadas de antemano para hablar sin internet. Las voces de Piper son de rhasspy.',
     'aboutVoices':
@@ -815,6 +839,10 @@ const ui = {
     'voiceTestIn10': 'Tester la voix du palier dans 10 secondes',
     'latestMilestone': 'Aujourd\'hui',
     'aboutTitle': 'À propos et crédits',
+    'privacyTitle': 'Politique de confidentialité',
+    'privacyHint': 'Vous pouvez la lire dans n’importe quel navigateur à cette adresse :',
+    'privacyCopy': 'Copier le lien',
+    'privacyCopied': 'Lien copié',
     'aboutIntro':
         'Quiet Steps inclut des voix préenregistrées pour parler sans internet. Les voix Piper sont de rhasspy.',
     'aboutVoices':
@@ -944,6 +972,10 @@ const ui = {
     'voiceTestIn10': 'Prova la voce della tappa tra 10 secondi',
     'latestMilestone': 'Oggi',
     'aboutTitle': 'Informazioni e crediti',
+    'privacyTitle': 'Informativa sulla privacy',
+    'privacyHint': 'Puoi leggerla in qualsiasi browser a questo indirizzo:',
+    'privacyCopy': 'Copia link',
+    'privacyCopied': 'Link copiato',
     'aboutIntro':
         'Quiet Steps include voci preregistrate per parlare senza internet. Le voci Piper sono di rhasspy.',
     'aboutVoices':
